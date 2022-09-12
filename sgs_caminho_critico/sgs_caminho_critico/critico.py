@@ -1,10 +1,6 @@
-import itertools
-import operator
 import re
-from datetime import datetime
 from enum import Enum
 from anytree import Node, RenderTree
-from zowe.pzowe import Pzowe
 
 
 class Termos(Enum):
@@ -84,7 +80,6 @@ def remove_trash_from_list(lista, trash, side):
                 lista[i] = lista[i].lstrip()
     return list(filter((trash).__ne__, lista))
 
-
 def get_ancestor_list(entrance_parts):
     # ['S3-PCPEAF60-PCPEAF61', '&', '|', 'PCPEAF6A-PCPEAF61', '|', 'PCPEAF6B-PCPEAF61', '|', 'PCPEAF6X-PCPEAF61']
     routine = ''
@@ -129,7 +124,6 @@ def get_ancestor_list(entrance_parts):
             # break
     return main_search, secondary_search
 
-
 def build_critical_path(routine, listt):
     list_cond = []
     entrance, output = get_in_out_conds(listt[routine.upper()])
@@ -137,7 +131,7 @@ def build_critical_path(routine, listt):
     entrance_parts = get_group_parts(entrance, list_cond)
     # mod1: ['S3-PCPEAF60-PCPEAF61', '&', '|', 'PCPEAF6A-PCPEAF61', '|', 'PCPEAF6B-PCPEAF61', '|', 'PCPEAF6X-PCPEAF61']
     if entrance_parts is not None:
-        main, secondary = get_ancestor_list(entrance_parts)  # mod1 capturou certo
+        main, secondary = get_ancestor_list(entrance_parts) # mod1 capturou certo
     #
     # entrance_header = entrance[0:entrance.index('(')]
     output_parts = get_group_parts(output)
@@ -172,7 +166,7 @@ def get_group_parts(input_cond, list_cond):
         input_cond_string = input_cond
     if '(' in input_cond_string:
         # 'cond(|cond2|cond3...)'
-        if '(' in input_cond_string:  # modelo PCPEAF61
+        if '(' in input_cond_string: # modelo PCPEAF61
             input_cond_list = input_cond_string.split('(')
             list_cond.append(input_cond_list[0])
             list_cond.append('&')
@@ -197,17 +191,17 @@ def get_group_parts(input_cond, list_cond):
         else:
             input_cond_list = input_cond_string.split('-')
             cond_size = len(input_cond_list)
-            if cond_size == 2:  # única condição simples
+            if cond_size == 2: # única condição simples
                 list_cond.append(input_cond_list[0])
                 list_cond.append('&')
                 if len(list_cond) == 2 and list_cond[-1] == '&':
                     list_cond = list_cond[0:-1]
-            elif cond_size == 3:  # única condição com s3 ou bbn
+            elif cond_size == 3: # única condição com s3 ou bbn
                 list_cond.append(input_cond_list[1])
                 list_cond.append('&')
                 if len(list_cond) == 2 and list_cond[-1] == '&':
                     list_cond = list_cond[0:-1]
-            else:  # várias condições simples
+            else: # várias condições simples
                 for i in range(0, cond_size, 2):
                     list_cond.append(input_cond_list[i])
                     list_cond.append('&')
@@ -246,7 +240,7 @@ def get_in_out_conds(condition_list: list):
 
 def get_simple_conditions(list_element, typo):
     if typo in list_element:
-        return list_element[typo]
+        return  list_element[typo]
     else:
         return None
 
@@ -256,28 +250,28 @@ def get_simple_conditions(list_element, typo):
     #     prefix = 'o-'
     grp_cond = ''
     # if len(cond) > 1:
-    # if '(' in cond or '|' in cond or ')' in cond:
-    # modelo ['S3-PCPEAF60-PCPEAF61', '(|PCPEAF6A-PCPEAF61', '|PCPEAF6B-PCPEAF61']
-    # grp_cond = ''
-    # if len(cond) > 1:
+        # if '(' in cond or '|' in cond or ')' in cond:
+        # modelo ['S3-PCPEAF60-PCPEAF61', '(|PCPEAF6A-PCPEAF61', '|PCPEAF6B-PCPEAF61']
+        # grp_cond = ''
+        # if len(cond) > 1:
     # cond_text = cond
     # cond_text = ''.join(cond)
     # return cond_text
-    # for elm_cond in cond:
-    #     if elm_cond[0] == '(' and elm_cond[1] != '|':
-    #         grp_cond += '('
-    #     if elm_cond[0] == '|' and (elm_cond[1] != '(' or elm_cond[1] != ')'):
-    #         grp_cond += '|' + elm_cond[1:]
-    #     if elm_cond[0:2] == '(|':
-    #         grp_cond += '(|' + elm_cond[2:]
-    #     else:
-    #         grp_cond += elm_cond if elm_cond not in grp_cond else ''
+        # for elm_cond in cond:
+        #     if elm_cond[0] == '(' and elm_cond[1] != '|':
+        #         grp_cond += '('
+        #     if elm_cond[0] == '|' and (elm_cond[1] != '(' or elm_cond[1] != ')'):
+        #         grp_cond += '|' + elm_cond[1:]
+        #     if elm_cond[0:2] == '(|':
+        #         grp_cond += '(|' + elm_cond[2:]
+        #     else:
+        #         grp_cond += elm_cond if elm_cond not in grp_cond else ''
 
-    # faz isso por elemento de cond
-    # localiza posição de ( início do agrupamento
-    # localiza a posição de | operadores lógicos
-    # localiza a posição de ) fim do agrupamento
-    # monta tudo numa linha
+        # faz isso por elemento de cond
+        # localiza posição de ( início do agrupamento
+        # localiza a posição de | operadores lógicos
+        # localiza a posição de ) fim do agrupamento
+        # monta tudo numa linha
     # elif len(cond) > 1 and (cond[1] == '-' or cond[1] == '+'):  # isto só serve para cond simples, composta não serve
     #     cond = prefix + cond[0] + cond[1]
     # else:
@@ -300,73 +294,21 @@ def is_an_input_condition(condition):
     else:
         return 0
 
+def built_tree(root, childs):
+    # [['PCPCINB2','PCPCOUB2','PCPCTLB2'], ['PCPD020', 'PCPE001'], ['PCPDOTI'], ['PCPEOT2','PCPS005', 'PCPINOT']]
+    _root = Node(root)
+    for child in childs[0]:
+        c = Node(child, parent=_root)
+    for child in childs[0]:
+        c = Node(child, parent=_root)
+    for child in childs[0]:
+        c = Node(child, parent=_root)
 
-def built_tree(conditions_list, type, target_routine):
-    if type == 'frc':
-        print('frc tree')
-        filtered_frc_conditions = get_frc_filtered_conditions(conditions_list, target_routine)
-    if type == 'sch':
-        # gerar a lista do jeito que é necessário pra imprimir vide arg da função print_tree
-        # aqui
-        print()
-    # construir a árvore a partir das condições retornadas
+    level_1_child_1 = Node(34, parent=_root)
+    level_1_child_2 = Node(89, parent=_root)
 
+    level_2_child_1 = Node(45, parent=level_1_child_1)
+    level_2_child_2 = Node(50, parent=level_1_child_2)
 
-    print()
-
-
-def get_frc_filtered_conditions(conditions_list, target_routine):
-    two_columns_frc_condition = get_two_columns_frc_conditions(conditions_list)
-    # retornar a hiearquia a partir da target_routine
-    return get_caller_frc_condition(target_routine, two_columns_frc_condition)
-
-
-def get_caller_frc_condition(target_routine, two_columns_frc_condition):
-    return [l for l in two_columns_frc_condition if l[0] == target_routine]
-
-
-def get_two_columns_frc_conditions(conditions_list):
-    # eliminar repetidos pela rotina chamadora e chamada
-    k = order_list_based_on_a_column(conditions_list, 2, False)
-    cond = remove_list_duplicates_based_on_two_columns(k, 2, 4)
-    # podar lista deixando apenas colunas 2 e 4 rotinas chamadora e chamada
-    return [(j[2].strip() + ',' + j[4].strip()).split(',') for j in cond]
-
-
-def remove_list_duplicates_based_on_two_columns(ordered_list, col_index1, col_index2):
-    seen = set()
-    return [x for x in ordered_list if x[col_index1] not in seen and not seen.add(x[col_index1]) and
-            x[col_index2] not in seen and not seen.add(x[col_index2])]
-
-
-def order_list_based_on_a_column(conditions_list, col_index, reverse_order):
-    return sorted(conditions_list, key=operator.itemgetter(col_index), reverse=reverse_order)
-
-
-def print_tree(routines_list: list) -> None:
-    # formato da routines_list deve ser
-    # lista = [[rotina,'/', filhos..., '/', netos...], ...]
-    print(f'Legenda:\n <- direção da passagem de condição \n '
-          f'Rotinas no mesmo nível são irmãs \n '
-          f'e passam condição para a rotina acima\n'
-          f'O nome da condição é [rotina acima-rotina abaixo]')
-    for elm in routines_list:
-        tabs = ''
-        for item in elm:
-            if item == '/':
-                tabs += ' -> '
-            else:
-                print(f'{tabs}[{item}]')
-
-
-def get_raw_frc_conditions(zowe, file_name: str) -> list:
-    raw_frc_conditions = zowe.getContentsDatasetMember(file_name)
-    if raw_frc_conditions[0] == 'ok':
-        raw_frc_conditions = raw_frc_conditions[1]
-        frc_conds = []
-        for cond_line in raw_frc_conditions:
-            frc_condition = cond_line.split(';')
-            new_date = datetime.strptime(frc_condition[0], '%m/%d/%y').strftime('%d/%m/%y')
-            frc_condition[0] = new_date
-            frc_conds.append(frc_condition)
-    return frc_conds
+    for pre, fill, node in RenderTree(root):
+        print("%s%s" % (pre, node.name))
