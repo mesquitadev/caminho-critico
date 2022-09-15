@@ -19,7 +19,7 @@ integration_test_requirements = [
     'pytest',
 ]
 run_requirements = [
-    'flask',
+    'anytree',
 ]
 
 with io.open('./sgs_caminho_critico/__init__.py', encoding='utf8') as version_f:

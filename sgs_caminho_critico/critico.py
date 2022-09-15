@@ -1,14 +1,63 @@
 import itertools
 import operator
+import os
 import re
 from datetime import datetime
 from enum import Enum
 from anytree import Node, RenderTree
 from zowe.pzowe import Pzowe
+import csv
+
+def is_logged(obj_zowe) -> bool:
+    obj_zowe.user = os.getenv('USER')
+    obj_zowe.pwd = os.getenv('PWD')
+    obj_zowe.svr = os.getenv('AMBIENTE')
+    if obj_zowe.logon_zowe(ambiente=obj_zowe.svr) != 'erro':
+        print('Logado em ' + obj_zowe.svr)
+        return True
+    else:
+        return False
 
 
-class Termos(Enum):
-    condicoes = '(\W*){2}-(\W*)-(\w*)|(\w*)-(\w*)'
+def read_csv(file_name, mode='r'):
+    content = []
+    with open(file_name, mode) as csvfile:
+        csvreader = csv.reader(csvfile)
+        for conteudo in csvreader:
+            content.append(conteudo)
+    return content
+
+
+
+def check_condition_in_list(res, list_of_conditions, i):
+    for elm in res:
+        if list_of_conditions[i][1] in elm[1]:
+            return True
+        else:
+            return False
+
+
+def get_recursive_conditions(condicoes_rotinas_filhas: list, cond_out):
+    res = []
+    for i in range(len(condicoes_rotinas_filhas)):
+        for x in range(len(cond_out)):
+            result = check_condition_in_list(res, condicoes_rotinas_filhas, i)
+            if condicoes_rotinas_filhas[i][1] in cond_out[x] and not result:
+                res.append(cond_out[x])
+
+    if condicoes_rotinas_filhas is None:
+        res = remove_list_duplicates_based_on_vary_columns(res)
+        return res
+    res = get_recursive_conditions(res, cond_out)
+
+
+def get_particionado(tabela):
+    hlq_ctm = {'HM': 'HMA.PCP.SCHZOWE', 'BR': 'BRA.PCP.SCHZOWE', 'B2': 'B2A.PCP.SCHZOWE', 'B3': 'B3A.PCP.SCHZOWE'}
+    return hlq_ctm[os.getenv('AMBIENTE')] + '(' + tabela + ')'
+
+
+def get_frc_cond_filename(radical, ending):
+    return radical + datetime.today().strftime('%y%m%d') + ending
 
 
 def read_text_files(file_name, code):
@@ -310,9 +359,10 @@ def built_tree(conditions_list, type, target_routine):
         # aqui
         print()
     # construir a árvore a partir das condições retornadas
+    for i in range(len(filtered_frc_conditions)):
+        filtered_frc_conditions[i].insert(1, '/')
 
-
-    print()
+    return filtered_frc_conditions
 
 
 def get_frc_filtered_conditions(conditions_list, target_routine):
@@ -337,6 +387,15 @@ def remove_list_duplicates_based_on_two_columns(ordered_list, col_index1, col_in
     seen = set()
     return [x for x in ordered_list if x[col_index1] not in seen and not seen.add(x[col_index1]) and
             x[col_index2] not in seen and not seen.add(x[col_index2])]
+
+
+def remove_list_duplicates_based_on_vary_columns(ordered_list):
+    l = []
+    for i in ordered_list:
+        if i not in l:
+            l.append(i)
+    l.sort()
+    return l
 
 
 def order_list_based_on_a_column(conditions_list, col_index, reverse_order):

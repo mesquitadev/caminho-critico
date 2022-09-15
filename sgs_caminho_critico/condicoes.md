@@ -58,30 +58,11 @@ api ctm tempos inicio fim rotina /statistics
 
 
 
-### modelo de schedule 
-HOMB DJOD180  LIB HMCTMP1.SCHEDULE.PCP                          TABLE: DJO      
-COMMAND ===>                                                    SCROLL===> CRSR 
-+---------------------------------- BROWSE -----------------------------------+ 
-| =========================================================================== | 
-| IN       RDOD124B-DJOD180     ODAT      RDOD215A-DJOD180     ODAT           | 
-|          DJOD150-DJOD180      ODAT      RDOD102A-DJOD180     ODAT           |  condicoes in segunda parte é a rotina atual esquerda é antecessora tipo A
-|          RDOD102B-DJOD180     ODAT                                          | 
-| CONTROL  DJOD180-DJOD181      S             DJOD180-184-524-104  E          | 
-|                                                                             | 
-| RESOURCE INIT                 0001          CPUDB2FI#$           0001       | 
-|                                                                             | 
-| FROM TIME         +     DAYS    UNTIL TIME      +     DAYS                  | 
-| DUE OUT TIME      +     DAYS    PRIORITY     SAC    CONFIRM                 | 
-| TIME ZONE:                                                                  | 
-| =========================================================================== | 
-| OUT      DJOD180-DJOD178      ODAT +    DJOD180-DJOD179      ODAT +         | cond out primeiro rotina atual - segundo sucessor se tipo A senão apenas mata cond in 
-|          RDOD124B-DJOD180     ODAT -    RDOD215A-DJOD180     ODAT -         | 
-|          DJOD150-DJOD180      ODAT -    RDOD102A-DJOD180     ODAT -         | 
-|          RDOD102B-DJOD180     ODAT -                                        | 
 
 ### Análise
 Condições a serem ignoradas:
-###D0103-SOLD7803
+#*
+?*
 
 DB2IIT.OPR_RLZD_CND nesta tabela select where jobnaame <> ctm3%
 condições do tipo A (+) e modelo O-D marcam a rotina que sucede a rotina O ou seja a D.
@@ -130,3 +111,23 @@ Se rotina1 <> nome da schedule
     logo, a rotina2 será a rotina destinatária da condição
     neste caso, a schedule atual apenas serve de intermediária para as condições e se liga à rotina2 apenas para a passagem de condição
     então, as condições de saída da schedule atual serão também as de entrada com o sinal de '-' ao final para finalizar as condições
+rotina buscada
+SOLD010J
+raiz
+['SOLD010J', 'DEBD010-SOLD010J', 'PREV', 'And', ''],
+['SOLD010J', 'SOLD001-SOLD010J', 'ODAT', 'And', '']
+dependentes
+['DEBD010', 'DEBD010-SOLD010J', 'ODAT', '+'],
+['SOLD001', 'SOLD001-SOLD010J', 'ODAT', '+'],
+['SOLD010J', 'SOLD010J-AGED000J', 'ODAT', '+'], 
+['SOLD010J', 'SOLD010J-CDED065J', 'PREV', '+'], 
+['SOLD010J', 'SOLD010J-CVND010', 'PREV', '+'], 
+['SOLD010J', 'SOLD010J-GRIDJATT', 'ODAT', '+'], 
+['SOLD010J', 'SOLD010J-SOLD010X', 'ODAT', '+'], 
+['SOLD010J', 'SOLD010J-SOLD014J', 'ODAT', '+'], 
+['SOLD010J', 'SOLD010J-SOLD030', 'ODAT', '+'], 
+['SOLD010J', 'SOLD010J-SOLD035', 'ODAT', '+'], 
+['SOLD010J', 'SOLD010J-SOLD090J', 'PREV', '+'],
+['SOLD010J', 'SOLD010J-SOLD779A', 'ODAT', '+'], 
+['SOLD010J', 'SOLD010J-SOLD781', 'ODAT', '+'],
+['SOLD010J', 'SOLD010J-SOLD782', 'ODAT', '+']

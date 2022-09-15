@@ -1,6 +1,6 @@
 import contextvars
 
-
+Session = None
 request_global = contextvars.ContextVar("request_global",
                                         default=dict())
 
