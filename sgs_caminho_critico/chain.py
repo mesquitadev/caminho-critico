@@ -8,7 +8,7 @@ class Chain:
         self.cond_in = None
         self.cond_out = None
 
-    def get_routines_in_condouts_by_in_conditions(self, in_condition) -> list:
+    def get_routines_in_condouts_by_condins(self, in_condition) -> list:
         l = []
         # for i in range(len(in_conditions)):
         for x in range(len(self.cond_out)):
@@ -32,9 +32,31 @@ class Chain:
 
     def get_chain(self, routine):
         conditions = self.get_in_conditions_by_routine(routine)
+        if routine not in self.routines:
+            self.routines.append(routine)
+            for condition in conditions:
+                self.get_routines_in_condouts_by_condins(condition)
+        if self.routines:
+            routines_copy = iter(self.routines)
+            try:
+                el = (next(routines_copy))
+                if el == routine:
+                    el = (next(routines_copy))
+                self.get_chain(el)
+            except StopIteration:
+               return
+        #     if routines_copy:
+        #         elm = routines_copy.pop(0)
+        #     else:
+        #         return
+        #
+
+
+    def get_chain_old(self, routine):
+        conditions = self.get_in_conditions_by_routine(routine)
         self.routines.append(routine)
         for condition in conditions:
-            self.get_routines_in_condouts_by_in_conditions(condition)
+            self.get_routines_in_condouts_by_condins(condition)
 
     def read_cond_type(self, file_name, type:str, mode='r'):
         content = []
