@@ -1,5 +1,5 @@
 from fastapi_sqlalchemy import db
-from db import Logs
+from former.db import Logs
 
 
 async def insert_log(log):

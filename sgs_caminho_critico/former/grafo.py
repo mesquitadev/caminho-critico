@@ -22,6 +22,14 @@ class Grafo():
             for col in cols_to_remove:
                 del (elm[col])
         return list_of_lists
+    def remove_duplicate(self, list_of_lists):
+        # list_oficial = []
+        # for elm in list_of_lists:
+        #     if elm in list_oficial:
+        #         continue
+        #     list_oficial.append(elm)
+        return sorted(set(list_of_lists))
+
 
     def read_csv(self, file_name, mode='r'):
         # stru file condin
@@ -37,6 +45,19 @@ class Grafo():
         return content
 
     def print_graph(self, list):
+
+        '''
+        def draw_graph(grafo, node_size, font_size, save=False):
+    plt.style.use('ggplot')
+    matplotlib.use('tkagg')
+    nx.draw(grafo, with_labels=True, font_weight='normal', node_size=node_size,
+            arrows=True, arrowstyle='->', arrowsize=10, width=2, font_size=font_size)
+    plt.show()
+    if save:
+        plt.savefig("mapa.png")
+
+
+        '''
         graph = netx.DiGraph()
         graph.add_edges_from(list)
 
@@ -44,19 +65,19 @@ class Grafo():
         """ This will implement a graph based on force directed algorithm (best way to showcase a graph like this with minimal
          crossings and overall good looking) if you don't care much about the graph label positions"""
 
-        netx.draw_networkx_edges(graph, pos, edgelist=graph.edges(), edge_color="blue", node_size=6, arrowsize=10,
-                                 min_source_margin=12, min_target_margin=12)
-        netx.draw_networkx_labels(graph, pos, font_size=10, font_color="black")
+        netx.draw_networkx_edges(graph, pos, edgelist=graph.edges(), edge_color="blue", node_size=6000, arrowsize=10,
+                                 min_source_margin=12, min_target_margin=12, width=2)
+        # netx.draw_networkx_labels(graph, pos, font_size=10, font_color="black")
+        netx.draw(graph,pos,with_labels=True,node_size=1500,font_size=10)  # extra aqui
         plot.show()
 
     def condin_g(self, rotina: list) -> list:
         for rot in rotina:
-            # if self.grafo and rot in self.grafo:
-            #     continue
             # procura pela rotina nas condições de entrada
             origem_fonte_in = self.get_routine_from_list_of_lists(self.cond_in, rot)
             # procura rotinas correspondentes às condições, nas condições de saída
             if origem_fonte_in:
+                # procura pela condicao de entrada da rotina nas condicoes de saída
                 rotinas_destino = self.get_routines_by_conditions(self.cond_out, origem_fonte_in)
                 # monta a lista [(destino,origem)...]
                 self.make_graph(rotinas_destino, origem_fonte_in)
@@ -68,21 +89,7 @@ class Grafo():
                     for i in range(list_for_graph_size, 0, -1):
                         if elm not in rotinas_destino and elm == self.list_for_graph[i][1]:
                             rotinas_destino.append(self.list_for_graph[i][0])
-                    # else:
-                    #     break
-
-                    # x = self.list_for_graph
         return rotinas_destino
-        # if origem_fonte_in:
-        #     for item in self.fonte_in:
-        #         if item[0] == rot:
-        #             self.condicoes.append(item[1])
-        #             self.fonte_in = list(filter(item.__ne__, self.fonte_in))
-        #             self.grafo.append(self.rotinas[-1])  # rot
-        #             self.grafo_conds.append(self.condicoes[-1])
-        #     return True
-        # else:
-        #     return origem_fonte_in
 
     def search_value_in_list_of_lists(self, lista, valor):
         return [(lista.index(x), x.index(valor)) for x in lista if valor in x[1]]

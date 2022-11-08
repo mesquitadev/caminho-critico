@@ -2,7 +2,7 @@ from fastapi import Depends, Security
 from fastapi.security import HTTPBasic, HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.security.api_key import APIKeyCookie
 import session as session
-import persistence.auth as persistence
+import former.persistence.auth as persistence
 from ldap3 import Server, Connection, ALL
 import hashlib
 import requests

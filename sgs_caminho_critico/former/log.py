@@ -7,7 +7,7 @@ from fastapi import Request, Response
 from fastapi.routing import APIRoute
 
 import session as session
-import persistence.log as persistence
+import former.persistence.log as persistence
 
 
 class LogTransaction(APIRoute):

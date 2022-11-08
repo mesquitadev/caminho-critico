@@ -1,11 +1,6 @@
-import itertools
 import operator
 import os
-import re
 from datetime import datetime
-from enum import Enum
-from anytree import Node, RenderTree
-from zowe.pzowe import Pzowe
 import csv
 
 def is_logged(obj_zowe) -> bool:
