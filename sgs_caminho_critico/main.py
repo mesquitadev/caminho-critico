@@ -1,5 +1,3 @@
-import re
-
 from gera_descendentes import monta_grafo, get_edges, get_itens_entrada
 from graf_drawing import draw_graph
 import networkx as nx
@@ -22,5 +20,9 @@ if __name__ == '__main__':
     monta_grafo(no_inicial, grupo, edges, get_itens_entrada(), mapa)
 
     # gerar executavel
-    print(f'edges: {get_edges()}')
-    draw_graph(no_inicial, mapa, node_size=2000, font_size=8, origin_color='green', others_color='violet')
+    edges_gerados = get_edges()
+    if edges_gerados:
+        print(f'edges: {edges_gerados}')
+        draw_graph(no_inicial, mapa, node_size=2000, font_size=8, origin_color='green', others_color='violet', font_color='white')
+    else:
+        print(f'A rotina {no_inicial} não passa condição para outras rotinas')
