@@ -1,5 +1,5 @@
 from utils import read_csv_file, remove_duplicates_from_list, is_character_a2z
-from graf_drawing import build_edges
+from graph_generator import build_edges
 
 all_edges = []
 itens_entrada = []

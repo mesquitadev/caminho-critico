@@ -3,7 +3,7 @@ import sys
 import time
 from datetime import date
 from files import get_item_by_node
-from graf_drawing import build_edges
+from graph_generator import build_edges
 from critico import get_treated_schedule_content, get_particionado, build_critical_path
 from dbase import getJCL, get_records, conectar
 from grafo import Grafo
