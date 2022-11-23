@@ -1,8 +1,6 @@
 import csv
 import json
 import re
-import sys
-
 
 def is_character_a2z(character):
     # test char and return None if false

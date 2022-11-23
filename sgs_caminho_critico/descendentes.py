@@ -53,7 +53,6 @@ def monta_grafo(no_inicial, grupo, edges, no_destino, mapa):
             no_inicio = no_org[0]
             if no_inicio and no_inicio == no_inicial:
                 continue
-            # no_inicio = no_inicio[0] if no_inicio else None
             cond_inicial = no_org[1]  # captura condições para busca no outro arquivo
             no_destino = get_item_by_node(cond_inicial, entrada, 1)
             edges = build_edges(no_inicio, no_destino)
