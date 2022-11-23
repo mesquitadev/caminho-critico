@@ -2,8 +2,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from utils import remove_duplicates_from_list
-
 
 def get_node_color(grafo, root_node, origin_color, others_color):
     colors = []
@@ -15,11 +13,12 @@ def get_node_color(grafo, root_node, origin_color, others_color):
     return colors
 
 
-def draw_graph(root_node_label, grafo, node_size, font_size, origin_color, others_color, font_color='black', save=False):
+def draw_graph(root_node_label, grafo, node_size, font_size, origin_color, others_color, font_color='black', save=False, seed=3113794652):
     plt.style.use('ggplot')
     matplotlib.use('tkagg')
+    pos = nx.spring_layout(grafo, seed=seed)
     color_map = get_node_color(grafo, root_node_label, origin_color, others_color)
-    nx.draw(grafo, with_labels=True, font_weight='normal', node_size=node_size,
+    nx.draw(G=grafo, pos=pos, with_labels=True, font_weight='normal', node_size=node_size,
             arrows=True, arrowstyle='->', arrowsize=10, width=2, font_size=font_size,
             node_color=color_map, font_color=font_color)
     plt.show()
