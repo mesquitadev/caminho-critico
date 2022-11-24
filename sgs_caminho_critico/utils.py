@@ -1,6 +1,8 @@
 import csv
 import json
 import re
+import sys
+
 
 def is_character_a2z(character):
     # test char and return None if false
@@ -62,19 +64,20 @@ def remove_duplicates_from_generated_edges(generated_edges, list=False):
     return generated_edges_no_duplicates
 
 
-def insert_nodes(id_origem, id_value, empty_value, zero_value):
-    return {"id": str(id_origem), "title": id_value, "subTitle": empty_value, "detail__role": empty_value,
-            "arc__failed": zero_value, "arc__passed": zero_value, "mainStat": id_value}
+def insert_nodes(id_origem, id_value, empty_value, zero_value, value_passed, value_failed):
+    return {"id": str(id_origem), "title": id_value, "subTitle": empty_value, "mainStat": id_value,
+            "secondaryStat": zero_value, "arc__failed": value_failed, "arc__passed": value_passed}
 
 
-def insert_edges(id_edge, id_origem, id_destino, empty_value=""):
-    return {"id": str(id_edge), "source": str(id_origem), "target": str(id_destino), "mainStat": ""}
+def insert_edges(id_edge, id_origem, id_destino, empty_value="", zero_value=0):
+    return {"id": str(id_edge), "source": str(id_origem), "target": str(id_destino), "mainStat": zero_value}
 
 
 def generate_valid_json(test_case):
     results = []
     for x in test_case:
-        result_details = {"\"case_id\"": "\"" + str(x) + "\"", "\"status_id\"": 1, "\"version\"": "\"1.0\"", "\"comment\"": "\"Test\""}
+        result_details = {"\"case_id\"": "\"" + str(x) + "\"", "\"status_id\"": 1, "\"version\"": "\"1.0\"",
+                          "\"comment\"": "\"Test\""}
         results.append(result_details)
     return json.dumps(results)
 
@@ -87,7 +90,16 @@ def jsonify_nodes_edges(generated_edges):
     generated_edges = remove_duplicates_from_generated_edges(generated_edges, list=True)
     for elm in generated_edges:
         id_origem = i
-        nodes = insert_nodes(id_origem=id_origem, id_value=elm[0][0], empty_value="", zero_value="0")
+        value_passed = 1.0
+        value_failed = 0.0
+
+        if id_origem == 1:
+            value_passed = 0.0
+            value_failed = 1.0
+
+        nodes = insert_nodes(id_origem=id_origem, id_value=elm[0][0], empty_value="", zero_value="0",
+                             value_passed=value_passed,
+                             value_failed=value_failed)
 
         if dicio_nodes:
             pos_node_in_dicio_nodes = remove_element_from_list(dicio=dicio_nodes, nodes=nodes, elm=-1)
@@ -101,7 +113,9 @@ def jsonify_nodes_edges(generated_edges):
 
         i += 1
         id_destino = i
-        nodes = insert_nodes(id_origem=id_origem, id_value=elm[0][1], empty_value="", zero_value="0")
+        nodes = insert_nodes(id_origem=id_destino, id_value=elm[0][1], empty_value="", zero_value=0,
+                             value_passed=value_passed,
+                             value_failed=value_failed)  # id_origem
         i += 1
         if dicio_nodes:
             pos_node_in_dicio_nodes = remove_element_from_list(dicio=dicio_nodes, nodes=nodes, elm=-1)
@@ -112,12 +126,15 @@ def jsonify_nodes_edges(generated_edges):
         else:
             dicio_nodes.append(nodes)
 
-        edges = insert_edges(id_edge=id_edge, id_origem=id_origem, id_destino=id_destino, empty_value="")
+        edges = insert_edges(id_edge=id_edge, id_origem=id_origem, id_destino=id_destino, empty_value="", zero_value=0)
         dicio_edges.append(edges)
         id_edge += 1
-    result = {"nodes_fields": dicio_nodes,
-              "edges_fields": dicio_edges}
+    result = {"edges": dicio_edges,
+              "nodes": dicio_nodes
+              }
     print(f'json puro {result}')
-    print(f'json formatado {json.dumps(json.dumps(result))}')
-
+    # print(f'json formatado {json.dumps(json.dumps(result))}')
+    # {"color": "red", "displayName": "Failed", "field_name": "arc__failed", "type": "number"},
+    # {"color": "green", "displayName": "Passed", "field_name": "arc__passed", "type": "number"},
+    # {"displayName": "Role", "field_name": "detail__role", "type": "string"}
     return result

@@ -39,6 +39,8 @@ def monta_grafo_ant(no_origem, edges, no_destino, mapa):  # no_origem
         edges=build_edges(no_origem[0][0], no_destino)
         mapa.add_edges_from(edges)
         edges = []
+        draw_graph(root_node_label=no_origem, grafo=mapa, node_size=2000, font_size=8,
+                   origin_color='olive', others_color='blue', font_color='whitesmoke')
         if no_destino and no_destino[0][0] in no_origem[0][0]:
             continue
             # no_origem_anterior.append(no_destino[0])
@@ -61,19 +63,10 @@ def monta_grafo_ant(no_origem, edges, no_destino, mapa):  # no_origem
         # draw_graph(mapa, node_size=2000, font_size=8)
 
 
-    for no in no_destino:
-        monta_grafo_ant(no, edges, no_destino, mapa)  # no_origem
+        for no in no_destino:
+            monta_grafo_ant(no, edges, no_destino, mapa)  # no_origem
 
 
 # rodadas de sucesso:
 # ACLD137,ACLD200,ACLDH07,ACLD250,ACLD775,DTII010,
 
-# if __name__ == '__main__':
-#
-#     mapa = nx.Graph()
-#     monta_grafo_ant(no_inicial, edges, itens_saida, mapa)  # itens_saida
-#
-#     # gerar executavel
-#     # python .\setup.py build
-#     print(f'edges: {all_edges}')
-#     draw_graph(mapa, node_size=2000, font_size=8)
