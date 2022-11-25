@@ -1,10 +1,9 @@
 import csv
 import json
 import re
-import sys
 
 
-def is_character_a2z(character):
+def is_char_a2z(character):
     # test char and return None if false
     pattern = re.compile("[A-Za-z]+")
     return pattern.fullmatch(character)
@@ -19,12 +18,12 @@ def read_csv_file(file_name, delimiter=','):
     return return_list
 
 
-def remove_element_from_list(dicio, nodes, elm):
+def get_node_index_from_dicio(dicio, nodes, elm):
     return list(filter((elm).__ne__,
-                       [int(dicio[i]['id']) if nodes['title'] in dicio[i]['title'] else -1 for i in range(len(dicio))]))
+                       [int(dicio[i]['id']) if nodes['title'] == dicio[i]['title'] else -1 for i in range(len(dicio))]))
 
 
-def remove_duplicates_from_list(list_with_duplicates):
+def remove_list_duplicate(list_with_duplicates):
     list_no_duplicates = []
     for item in list_with_duplicates:
         if item not in list_no_duplicates:
@@ -41,11 +40,18 @@ def is_all_equal(iterator):
     return all(first == x for x in iterator)
 
 
-def remove_values_from_list(the_list, val):
+def remove_value_if_different(the_list, val):
     return [value for value in the_list if value != val]
 
 
-def remove_duplicates_from_generated_edges(generated_edges, list=False):
+def remove_duplicate_tuples(duplicated_list):
+    if duplicated_list and is_all_equal(duplicated_list):
+        return [duplicated_list[0]]
+    else:
+        return [duplicated_list]
+
+
+def remove_duplicate_edges(generated_edges, list=False):
     generated_edges_no_duplicates = []
     for item in generated_edges:
         if len(item) > 1:
@@ -58,7 +64,6 @@ def remove_duplicates_from_generated_edges(generated_edges, list=False):
                 print(f'generated_edges has an element not equal {item}')
                 for it in item:
                     generated_edges_no_duplicates.append(it)
-                # exit(1)
         else:
             generated_edges_no_duplicates.append(item)
     return generated_edges_no_duplicates
@@ -87,7 +92,7 @@ def jsonify_nodes_edges(generated_edges):
     dicio_edges = []
     i = 1
     id_edge = 0
-    generated_edges = remove_duplicates_from_generated_edges(generated_edges, list=True)
+    generated_edges = remove_duplicate_edges(generated_edges, list=True)
     for elm in generated_edges:
         id_origem = i
         value_passed = 1.0
@@ -102,7 +107,7 @@ def jsonify_nodes_edges(generated_edges):
                              value_failed=value_failed)
 
         if dicio_nodes:
-            pos_node_in_dicio_nodes = remove_element_from_list(dicio=dicio_nodes, nodes=nodes, elm=-1)
+            pos_node_in_dicio_nodes = get_node_index_from_dicio(dicio=dicio_nodes, nodes=nodes, elm=-1)
             if not pos_node_in_dicio_nodes:
                 dicio_nodes.append(nodes)
             else:
@@ -118,7 +123,7 @@ def jsonify_nodes_edges(generated_edges):
                              value_failed=value_failed)  # id_origem
         i += 1
         if dicio_nodes:
-            pos_node_in_dicio_nodes = remove_element_from_list(dicio=dicio_nodes, nodes=nodes, elm=-1)
+            pos_node_in_dicio_nodes = get_node_index_from_dicio(dicio=dicio_nodes, nodes=nodes, elm=-1)
             if not pos_node_in_dicio_nodes:  # [0] == -1:
                 dicio_nodes.append(nodes)
             else:
@@ -133,8 +138,4 @@ def jsonify_nodes_edges(generated_edges):
               "nodes": dicio_nodes
               }
     print(f'json puro {result}')
-    # print(f'json formatado {json.dumps(json.dumps(result))}')
-    # {"color": "red", "displayName": "Failed", "field_name": "arc__failed", "type": "number"},
-    # {"color": "green", "displayName": "Passed", "field_name": "arc__passed", "type": "number"},
-    # {"displayName": "Role", "field_name": "detail__role", "type": "string"}
     return result

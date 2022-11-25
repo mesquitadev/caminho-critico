@@ -1,5 +1,5 @@
 from descendentes import get_item_by_node
-from utils import read_csv_file, remove_duplicates_from_list
+from utils import read_csv_file, remove_list_duplicate
 from graph_generator import build_edges, draw_graph
 import networkx as nx
 import sys
@@ -23,7 +23,7 @@ def get_item_by_node_ant(node_label, list_name, i, tipo='+'):
         itens = [it for it in list_name if node_label == it[i] and it[3] == tipo]
     else:
         itens = [it for it in list_name if node_label == it[i] ] # and it[3] == tipo
-    itens = remove_duplicates_from_list(itens)
+    itens = remove_list_duplicate(itens)
     return itens
 
 

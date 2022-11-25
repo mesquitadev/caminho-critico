@@ -1,11 +1,9 @@
 import networkx as nx
 from fastapi import FastAPI
-
-from descendentes import monta_grafo, get_itens_entrada, get_edges
-from utils import jsonify_nodes_edges, is_character_a2z
+from descendentes import monta_grafo
+from utils import jsonify_nodes_edges, is_char_a2z, read_csv_file
 
 app = FastAPI()
-
 
 @app.get('/api/graph/fields')
 def fetch_graph_fields():
@@ -38,16 +36,26 @@ def check_health():
 def fetch_graph_data(rotina=None, grupo=None, tipo=1, ambiente='br'):
     edges = []
     no_inicial = rotina.upper()
+    all_edges = []
+    no_origem_anterior = []
+    itens_entrada = []
 
-    if grupo and is_character_a2z(grupo[0]) is None:
+    if grupo and is_char_a2z(grupo[0]) is None:
         group = grupo[1:].upper()
     else:
         group = ''
 
+    if ambiente:
+        arq_in = ambiente + '_in.csv'
+        arq_out = ambiente + '_out.csv'
+
+    entrada = read_csv_file(arq_in, ',')
+    saida = read_csv_file(arq_out, ',')
+
     if tipo == '1':
         mapa = nx.Graph()
-        monta_grafo(no_inicial, group, edges, get_itens_entrada(), mapa)
-        return jsonify_nodes_edges(get_edges())
+        monta_grafo(no_inicial, group, edges, itens_entrada, mapa, entrada, saida, all_edges, no_origem_anterior)
+        return jsonify_nodes_edges(all_edges)
     else:
         return None
 
