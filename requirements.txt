@@ -1,9 +1,6 @@
-setuptools~=60.2.0
-requests~=2.28.1
-urllib3~=1.26.12
-db2~=0.1.1
-pyparsing~=3.0.9
-anytree~=2.8.0
-pydantic~=1.10.2
 networkx~=2.8.6
 matplotlib~=3.6.0
+flask
+setuptools~=60.2.0
+mysql-connector-python~=8.0.30
+fastapi~=0.87.0

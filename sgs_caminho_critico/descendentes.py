@@ -1,6 +1,5 @@
-from utils import read_csv_file, remove_list_duplicate, is_char_a2z, remove_duplicate_edges, \
-    remove_duplicate_tuples
 from graph_generator import build_edges
+from utils import remove_list_duplicate, is_char_a2z
 
 # all_edges = []
 # itens_entrada = []
@@ -13,6 +12,7 @@ no_origem_anterior = []
 
 
 def get_item_by_node(node_label, list_name, i, tipo='+'):
+    print(tipo)
     if i == 1:
         itens = [it for it in list_name if node_label == it[i]]
     else:

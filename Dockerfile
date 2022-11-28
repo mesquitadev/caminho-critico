@@ -5,7 +5,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM atf.intranet.bb.com.br:5001/bb/lnx/lnx-python3:3.8.2
+
+FROM atf.intranet.bb.com.br:5001/python:3.10 AS pre-sgs-container
+
+COPY pip.conf /etc/pip.conf
+COPY requirements.txt /tmp/requirements.txt
+COPY bundle.crt /etc/ssl/certs/bb.bundle.crt
+
+RUN pip install --no-cache-dir --upgrade --prefix /usr/local pip==22.0.4 setuptools==60.10.0 wheel==0.37.1 && \
+    pip install --no-cache-dir -r /tmp/requirements.txt
+
+
+FROM atf.intranet.bb.com.br:5001/python:3.10
 
 ARG build_date
 ARG vcs_ref
@@ -37,9 +48,29 @@ LABEL \
 ENV \
     VERSAO=$versao
 
-# exemplo
-RUN \
-    apk add --quiet --no-cache \
-        unzip=6.0-r4
+COPY sgs_caminho_critico /sgs_caminho_critico
+COPY --from=pre-sgs-container /usr/local/bin /usr/local/bin
+COPY --from=pre-sgs-container /usr/local/lib /usr/local/lib
+COPY sources.list /etc/apt/sources.list
+COPY skip-ssl-check /etc/apt/apt.conf.d/skip-ssl-check
+COPY supervisord.conf /etc/supervisord.conf
 
-CMD ["/bin/sh"]
+
+
+
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y vim=2:8.2.2434-3+deb11u1 \
+                       supervisor=4.2.2-2 \
+                       iputils-ping=3:20210202-1 \
+                       telnet=0.17-42 \
+                       dnsutils=1:9.16.27-1~deb11u1 \
+                       nginx=1.18.0-6.1 && \
+    apt-get clean && \
+    chown www-data:www-data /sgs_caminho_critico -R && \
+    rm -rf /var/lib/apt/lists/* && \
+    ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
+COPY nginx.conf /etc/nginx/nginx.conf
+
+WORKDIR /sgs_caminho_critico
+
+CMD ["/usr/bin/supervisord","-c","/etc/supervisord.conf"]

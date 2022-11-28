@@ -7,13 +7,14 @@ def get_node_color(grafo, root_node, origin_color, others_color):
     colors = []
     for node in grafo:
         if node == root_node:
-            colors.append(origin_color) # green
+            colors.append(origin_color)  # green
         else:
             colors.append(others_color)  # orange
     return colors
 
 
-def draw_graph(root_node_label, grafo, node_size, font_size, origin_color, others_color, font_color='black', save=False, seed=3113794652):
+def draw_graph(root_node_label, grafo, node_size, font_size, origin_color, others_color, font_color='black', save=False,
+               seed=3113794652):
     plt.style.use('ggplot')
     matplotlib.use('tkagg')
     pos = nx.spring_layout(grafo, seed=seed)
@@ -32,7 +33,6 @@ def draw_graph(root_node_label, grafo, node_size, font_size, origin_color, other
 #         if it_saida not in aux:
 #             aux.append(it_saida)
 #     return aux
-
 
 
 #

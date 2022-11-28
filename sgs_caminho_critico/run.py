@@ -5,6 +5,7 @@ from utils import jsonify_nodes_edges, is_char_a2z, read_csv_file
 
 app = FastAPI()
 
+
 @app.get('/api/graph/fields')
 def fetch_graph_fields():
     nodes_fields = [{"field_name": "id", "type": "string"},

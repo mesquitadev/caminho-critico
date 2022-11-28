@@ -1,0 +1,3 @@
+deb https://binarios.intranet.bb.com.br:443/artifactory/debian-debianorg-remote/ bullseye main
+deb https://binarios.intranet.bb.com.br:443/artifactory/debian-debianorgsecurity-remote/ bullseye-security main
+deb https://binarios.intranet.bb.com.br:443/artifactory/debian-debianorg-remote/ bullseye-updates main

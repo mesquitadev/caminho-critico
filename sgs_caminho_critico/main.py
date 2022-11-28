@@ -1,9 +1,8 @@
-from antecessores import monta_grafo_ant, get_itens_saida_ant, get_itens_entrada_ant
-from descendentes import monta_grafo, get_graph_table_records_from_list, \
-    get_graph_csv_table_records_from_list, get_insert_sql_from_list
-from graph_generator import draw_graph
 import networkx as nx
 
+from antecessores import monta_grafo_ant, get_itens_saida_ant
+from descendentes import monta_grafo
+from graph_generator import draw_graph
 from utils import is_char_a2z, jsonify_nodes_edges, read_csv_file
 
 # rodadas de sucesso:
@@ -27,8 +26,8 @@ if __name__ == '__main__':
     if tipo_grafo == '1':  # mapa com sucessores
         mapa = nx.Graph()
         monta_grafo(no_inicial, grupo, edges, itens_entrada, mapa, entrada, saida, all_edges, no_origem_anterior)
-        edges_gerados = all_edges #get_edges()
-        print(f'{jsonify_nodes_edges(all_edges)}') #get_edges()
+        edges_gerados = all_edges  # get_edges()
+        print(f'{jsonify_nodes_edges(all_edges)}')  # get_edges()
 
         if edges_gerados:
             print(f'edges: {edges_gerados}')
@@ -47,7 +46,7 @@ if __name__ == '__main__':
         monta_grafo_ant(no_inicial, edges, get_itens_saida_ant(), mapa, entrada, saida, all_edges, no_origem_anterior)
 
         # gerar executavel
-        edges_gerados = all_edges #get_edges()
+        edges_gerados = all_edges  # get_edges()
         if edges_gerados:
             print(f'edges: {edges_gerados}')
             draw_graph(root_node_label=no_inicial, grafo=mapa, node_size=2000, font_size=8,

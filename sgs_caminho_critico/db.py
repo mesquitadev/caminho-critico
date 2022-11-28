@@ -5,10 +5,12 @@ from mysql.connector import Error
 select n.name as origem , m.name as destino
 from edges e
 left outer join nodes n
-on e.source = n.id 
+on e.source = n.id
 left outer join nodes m
 on e.target = m.id
 '''
+
+
 def connect(host, database, user, pwd):
     try:
         connection = mysql.connector.connect(host=host,
@@ -16,8 +18,8 @@ def connect(host, database, user, pwd):
                                              user=user,
                                              password=pwd)
         if connection.is_connected():
-            db_Info = connection.get_server_info()
-            print("Connectado ao MySQL Server versão ", db_Info)
+            db_info = connection.get_server_info()
+            print("Connectado ao MySQL Server versão ", db_info)
     except Error as e:
         print("Error ao conectar ao MySQL", e)
         return None
@@ -78,14 +80,14 @@ def get_record(connection, cursor, sql, parm):
 
 def create_tables(connection, cursor):
     try:
-        sql_nodes = """CREATE TABLE nodes ( 
+        sql_nodes = """CREATE TABLE nodes (
                        id varchar(12) NOT NULL,
                        name varchar(60) NOT NULL,
                        PRIMARY KEY (id)) """
         cursor.connection.cursor()
         cursor.execute(f'{sql_nodes};')
 
-        sql_edges = """CREATE TABLE edges ( 
+        sql_edges = """CREATE TABLE edges (
                        id varchar(12) NOT NULL,
                        source varchar(60) NOT NULL,
                        target varchar(60) NOT NULL,
@@ -102,6 +104,7 @@ def create_tables(connection, cursor):
 
 
 def delete_all_records(connection, cursor, sql, parm):
+    print(parm)
     try:
         cursor.execute(f'{sql};')
         connection.commit()
