@@ -1,6 +1,5 @@
 networkx~=2.8.6
 matplotlib~=3.6.0
-flask
 setuptools~=60.2.0
 mysql-connector-python~=8.0.30
 fastapi~=0.87.0
