@@ -50,8 +50,6 @@ if __name__ == '__main__':
         edges_gerados = all_edges #get_edges()
         if edges_gerados:
             print(f'edges: {edges_gerados}')
-            # edges_to_db, nodes_to_db = get_graph_table_records_from_list(edges_gerados)
-            # edges_to_db, nodes_to_db = get_insert_sql_from_list(edges_gerados)
             draw_graph(root_node_label=no_inicial, grafo=mapa, node_size=2000, font_size=8,
                        origin_color='olive', others_color='blue', font_color='whitesmoke')
         else:

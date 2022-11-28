@@ -44,6 +44,14 @@ def remove_value_if_different(the_list, val):
     return [value for value in the_list if value != val]
 
 
+def save_graph_to_file(graph_json, routine, graph_code, plex, group):
+    graph_type = 'direct' if graph_code == '1' else 'reverse'
+    json_graph_filename = f'{routine}_{graph_type}_{plex}_{group}'
+    json_object = json.dumps(graph_json)
+    with open(json_graph_filename, "w") as jsonfile:
+        jsonfile.write(json_object)
+
+
 def remove_duplicate_tuples(duplicated_list):
     if duplicated_list and is_all_equal(duplicated_list):
         return [duplicated_list[0]]
