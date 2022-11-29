@@ -1,9 +1,19 @@
-import networkx as nx
-from fastapi import FastAPI
-from descendentes import monta_grafo
-from utils import jsonify_nodes_edges, is_char_a2z, read_csv_file
+import os
 
+import networkx as nx
+from fastapi import FastAPI, UploadFile
+from descendentes import monta_grafo
+from utils import jsonify_nodes_edges, is_char_a2z, read_csv_file, upload_file
+import aiofiles
 app = FastAPI()
+
+
+@app.post("/uploadfiles/")
+async def create_upload_files(files: list[UploadFile]):
+    for file in files:
+        async with aiofiles.open(os.getenv('CSV_FILES')+file.filename, "wb") as f:
+            content = await file.read()
+            await f.write(content)
 
 
 @app.get('/api/graph/fields')
@@ -33,6 +43,11 @@ def check_health():
     return "API is working well! "
 
 
+@app.get('/api/graph/upload')
+def upload_graph_data(ambiente='br'):
+    upload_file(ambiente)
+
+
 @app.get('/api/graph/data')
 def fetch_graph_data(rotina=None, grupo=None, tipo=1, ambiente='br'):
     edges = []
@@ -46,12 +61,16 @@ def fetch_graph_data(rotina=None, grupo=None, tipo=1, ambiente='br'):
     else:
         group = ''
 
-    if ambiente:
-        arq_in = ambiente + '_in.csv'
-        arq_out = ambiente + '_out.csv'
+    pasta = os.getenv('CSV_FILES')
 
-    entrada = read_csv_file(arq_in, ',')
-    saida = read_csv_file(arq_out, ',')
+    arq_in = ambiente + '_in.csv' if ambiente else None
+    arq_out = ambiente + '_out.csv' if ambiente else None
+
+    entrada = read_csv_file(f'{pasta}{arq_in}', ',') if arq_in else None
+    saida = read_csv_file(f'{pasta}{arq_out}', ',') if arq_out else None
+    if entrada is None or saida is None:
+        print('Ambiente não fornecido')
+        exit(1)
 
     if tipo == '1':
         mapa = nx.Graph()

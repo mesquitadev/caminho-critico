@@ -1,6 +1,27 @@
 import csv
 import json
+import os
 import re
+import requests
+
+
+def upload_file(environ):
+    url = "url destino do arquivo"
+    arq_in = environ + '_in.csv' if environ else None
+    arq_out = environ + '_out.csv' if environ else None
+    pasta = os.getenv('CSV_FILES')
+
+    if not arq_in or not arq_out:
+        print("Arquivos csv indefinidos")
+        exit(1)
+
+    csv_files = {
+        "arq_in": open(f'{pasta}{arq_in}', "rb"),
+        "arq_out": open(f'{pasta}{arq_out}', "rb")
+    }
+    test_res = requests.post(url, files=csv_files)
+    if not test_res.ok:
+        print("Falha no upload do arquivo csv")
 
 
 def is_char_a2z(character):
@@ -19,7 +40,7 @@ def read_csv_file(file_name, delimiter=','):
 
 
 def get_node_index_from_dicio(dicio, nodes, elm):
-    return list(filter((elm).__ne__,
+    return list(filter(elm.__ne__,
                        [int(dicio[i]['id']) if nodes['title'] == dicio[i]['title'] else -1 for i in range(len(dicio))]))
 
 
@@ -59,12 +80,12 @@ def remove_duplicate_tuples(duplicated_list):
         return [duplicated_list]
 
 
-def remove_duplicate_edges(generated_edges, list=False):
+def remove_duplicate_edges(generated_edges, lista=False):
     generated_edges_no_duplicates = []
     for item in generated_edges:
         if len(item) > 1:
             if is_all_equal(item):
-                if list:
+                if lista:
                     generated_edges_no_duplicates.append([item[0]])
                 else:
                     generated_edges_no_duplicates.append(item[0])
@@ -83,6 +104,7 @@ def insert_nodes(id_origem, id_value, empty_value, zero_value, value_passed, val
 
 
 def insert_edges(id_edge, id_origem, id_destino, empty_value="", zero_value=0):
+    print(empty_value)
     return {"id": str(id_edge), "source": str(id_origem), "target": str(id_destino), "mainStat": zero_value}
 
 
@@ -100,7 +122,7 @@ def jsonify_nodes_edges(generated_edges):
     dicio_edges = []
     i = 1
     id_edge = 0
-    generated_edges = remove_duplicate_edges(generated_edges, list=True)
+    generated_edges = remove_duplicate_edges(generated_edges, lista=True)
     for elm in generated_edges:
         id_origem = i
         value_passed = 1.0

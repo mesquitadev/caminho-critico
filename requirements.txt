@@ -4,3 +4,5 @@ setuptools~=60.2.0
 mysql-connector-python~=8.0.30
 fastapi~=0.87.0
 uvicorn~=0.15.0
+requests~=2.28.1
+aiofiles~=22.1.0
