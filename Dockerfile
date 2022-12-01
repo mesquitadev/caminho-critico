@@ -58,7 +58,8 @@ COPY supervisord.conf /etc/supervisord.conf
 
 
 
-RUN apt-get update && \
+RUN mkdir /csv && \
+    apt-get update && \
     apt-get install --no-install-recommends -y vim=2:8.2.2434-3+deb11u1 \
                        supervisor=4.2.2-2 \
                        iputils-ping=3:20210202-1 \

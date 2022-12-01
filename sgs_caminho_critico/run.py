@@ -2,6 +2,8 @@ import os
 
 import networkx as nx
 from fastapi import FastAPI, UploadFile
+from fastapi.responses import JSONResponse
+
 from descendentes import monta_grafo
 from utils import jsonify_nodes_edges, is_char_a2z, read_csv_file
 import aiofiles
@@ -11,10 +13,13 @@ app = FastAPI()
 
 @app.post("/uploadfiles/")
 async def create_upload_files(files: list[UploadFile]):
-    for file in files:
-        async with aiofiles.open(os.getenv('CSV_FILES') + file.filename, "wb") as f:
-            content = await file.read()
-            await f.write(content)
+    try:
+        for file in files:
+            async with aiofiles.open(os.getenv('CSV_FILES') + file.filename, "wb") as f:
+                content = await file.read()
+                await f.write(content)
+    except Exception as e:
+        return JSONResponse(status_code=500, content={'erro': format(e)})
 
 
 @app.get('/api/graph/fields')
