@@ -1,27 +1,6 @@
 import csv
 import json
-import os
 import re
-import requests
-
-
-def upload_file(environ):
-    url = "url destino do arquivo"
-    arq_in = environ + '_in.csv' if environ else None
-    arq_out = environ + '_out.csv' if environ else None
-    pasta = os.getenv('CSV_FILES')
-
-    if not arq_in or not arq_out:
-        print("Arquivos csv indefinidos")
-        exit(1)
-
-    csv_files = {
-        "arq_in": open(f'{pasta}{arq_in}', "rb"),
-        "arq_out": open(f'{pasta}{arq_out}', "rb")
-    }
-    test_res = requests.post(url, files=csv_files)
-    if not test_res.ok:
-        print("Falha no upload do arquivo csv")
 
 
 def is_char_a2z(character):

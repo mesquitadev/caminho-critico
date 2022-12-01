@@ -3,15 +3,16 @@ import os
 import networkx as nx
 from fastapi import FastAPI, UploadFile
 from descendentes import monta_grafo
-from utils import jsonify_nodes_edges, is_char_a2z, read_csv_file, upload_file
+from utils import jsonify_nodes_edges, is_char_a2z, read_csv_file
 import aiofiles
+
 app = FastAPI()
 
 
 @app.post("/uploadfiles/")
 async def create_upload_files(files: list[UploadFile]):
     for file in files:
-        async with aiofiles.open(os.getenv('CSV_FILES')+file.filename, "wb") as f:
+        async with aiofiles.open(os.getenv('CSV_FILES') + file.filename, "wb") as f:
             content = await file.read()
             await f.write(content)
 
@@ -41,11 +42,6 @@ def fetch_graph_fields():
 @app.get('/api/health')
 def check_health():
     return "API is working well! "
-
-
-@app.get('/api/graph/upload')
-def upload_graph_data(ambiente='br'):
-    upload_file(ambiente)
 
 
 @app.get('/api/graph/data')
