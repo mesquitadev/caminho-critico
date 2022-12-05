@@ -1,4 +1,4 @@
-from graph_generator import build_edges, draw_graph
+from graph_generator import build_edges
 from utils import remove_list_duplicate
 
 
