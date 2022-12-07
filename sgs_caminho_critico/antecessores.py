@@ -1,4 +1,4 @@
-from graph_generator import build_edges
+from graph_generator import build_edges_predecessors
 from utils import remove_list_duplicate
 
 
@@ -16,11 +16,12 @@ def monta_grafo_ant(no_origem, edges, no_destino, mapa, entrada, saida, all_edge
         no_origem = get_item_by_node_ant(no_origem, entrada, 0)  # itens_entrada  # entrada  # 0
     else:
         no_origem = []
+    print(edges, no_destino)
     # captura as condições dos nós de entrada
     for v in no_origem:  # itens_entrada
         cond_inicial = v[1]  # captura condições para busca no outro arquivo
         no_destino = get_item_by_node_ant(cond_inicial, saida, 1)  # no_origem # saida
-        edges = build_edges(no_origem[0][0], no_destino)
+        edges = build_edges_predecessors(no_origem[0][0], no_destino)
         all_edges.append(edges)
         mapa.add_edges_from(edges)
         edges = []

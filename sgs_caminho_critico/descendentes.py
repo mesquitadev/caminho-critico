@@ -11,8 +11,8 @@ no_origem_anterior = []
 # saida = read_csv_file('br_out.csv', ',')
 
 
-def get_item_by_node(node_label, list_name, i, tipo='+'):
-    print(tipo)
+def get_item_by_node(node_label, list_name, i):
+    # , tipo='+'  retirado da assinatura
     if i == 1:
         itens = [it for it in list_name if node_label == it[i]]
     else:
@@ -21,7 +21,7 @@ def get_item_by_node(node_label, list_name, i, tipo='+'):
     return itens
 
 
-def monta_grafo(no_inicial, grupo, edges, no_destino, mapa, entrada, saida, all_edges, no_origem_anterior):
+def monta_grafo(no_inicial, grupo, edges, no_destino, mapa, entrada, saida, all_edges, previous_origin_node):
     new_origin = []
     if no_inicial:
         no_origem = get_item_by_node(no_inicial, saida, 0)
@@ -45,17 +45,17 @@ def monta_grafo(no_inicial, grupo, edges, no_destino, mapa, entrada, saida, all_
         if edges and edges not in all_edges:
             mapa.add_edges_from(edges)
             all_edges.append(edges)
-            if no_destino and no_destino[0] not in no_origem_anterior:
-                no_origem_anterior.append(no_destino[0])
+            if no_destino and no_destino[0] not in previous_origin_node:
+                previous_origin_node.append(no_destino[0])
         else:
             continue
         # edges = []
         # if no_destino and no_destino[0] not in no_origem_anterior:
         #     no_origem_anterior.append(no_destino[0])
     # draw_graph(mapa, node_size=2000, font_size=8)
-    for no_inicio in no_origem_anterior:
+    for no_inicio in previous_origin_node:
         # cond_inicial = no_inicio[1]
-        no_origem_anterior.pop(0)
+        previous_origin_node.pop(0)
         no_origem = get_item_by_node(no_inicio[0], saida, 0)
         for no_org in no_origem:
             no_inicio = no_org[0]
@@ -75,7 +75,7 @@ def monta_grafo(no_inicial, grupo, edges, no_destino, mapa, entrada, saida, all_
         # draw_graph(mapa, node_size=2000, font_size=8)
 
         no_inicial = no_destino[0][0] if no_destino else []
-        monta_grafo(no_inicial, grupo, edges, no_destino, mapa, entrada, saida, all_edges, no_origem_anterior)
+        monta_grafo(no_inicial, grupo, edges, no_destino, mapa, entrada, saida, all_edges, previous_origin_node)
 
 
 # def get_edges():

@@ -55,3 +55,14 @@ def build_edges(no_origem, lista):
         # if elm[0] not in next_origin:
         #     next_origin.append(elm[0])
     return edges  # , next_origin
+
+
+def build_edges_predecessors(no_origem, lista):
+    edges = []
+    # next_origin = []
+    for elm in lista:
+        edges.append((elm[0], no_origem))
+        # edges.append((no_origem, elm[0] if elm[3] == '' else elm[0] + '&' if elm[3] == 'And' else '|'))
+        # if elm[0] not in next_origin:
+        #     next_origin.append(elm[0])
+    return edges  # , next_origin

@@ -1,6 +1,32 @@
 import csv
 import json
 import re
+from datetime import date
+from os.path import exists
+import os
+# import glob
+
+
+def remove_files_by_matching_pattern(dir_path, pattern):
+    list_of_files_with_error = []
+    for parent_dir, dir_names, filenames in os.walk(dir_path):
+        for filename in filenames:
+            if pattern.findall(filename):
+                try:
+                    os.remove(os.path.join(parent_dir, filename))
+                except OSError:
+                    print("Error while deleting file : ", os.path.join(parent_dir, filename))
+                    list_of_files_with_error.append(os.path.join(parent_dir, filename))
+    return list_of_files_with_error
+
+
+# def remove_file_pattern(file_pattern):
+#     file_list = glob.glob(file_pattern)
+#     for file_path in file_list:
+#         try:
+#             os.remove(file_path)
+#         except OSError:
+#             print(f"Erro ao excluir arquivo {file_path}")
 
 
 def is_char_a2z(character):
@@ -44,12 +70,41 @@ def remove_value_if_different(the_list, val):
     return [value for value in the_list if value != val]
 
 
-def save_graph_to_file(graph_json, routine, graph_code, plex, group):
-    graph_type = 'direct' if graph_code == '1' else 'reverse'
-    json_graph_filename = f'{routine}_{graph_type}_{plex}_{group}'
+def get_file_name(routine, graph_type, plex, group):
+    group = group if group is not None else 'ng'
+    data = date.today()
+    return f'{routine.lower()}_{plex}_{graph_type}_{group}_{data}.json'
+
+
+def save_graph_to_file(graph_json, path, json_graph_filename):
     json_object = json.dumps(graph_json)
-    with open(json_graph_filename, "w") as jsonfile:
-        jsonfile.write(json_object)
+    result = False
+    try:
+        with open(f'{path}{json_graph_filename}', "w") as jsonfile:
+            jsonfile.write(json_object)
+        result = True
+    except IOError as e:
+        print(f'Erro ao salvar o arquivo json {json_graph_filename}: {e}')
+    finally:
+        return result
+
+
+def exists_json_file(path, json_graph_filename):
+    return exists(f'{path}{json_graph_filename}')
+
+
+def get_json_file(routine, graph_type, plex, group=None):
+    data = date.today()
+    path = os.getenv('CSV_FILES')
+    return exists(f'{path}{routine.lower()}_{graph_type}_{plex}_{group}_{data}.json')
+
+
+def get_json_content(path, json_file_name):
+    # try:
+    with open(f'{path}{json_file_name}', 'r') as openfile:
+        return json.load(openfile)
+    # except IOError as e:
+    #     print(f'json file not found {e}')
 
 
 def remove_duplicate_tuples(duplicated_list):
@@ -57,6 +112,14 @@ def remove_duplicate_tuples(duplicated_list):
         return [duplicated_list[0]]
     else:
         return [duplicated_list]
+
+
+def remove_empty_elements(dicio):
+    list_ = []
+    for elm in dicio:
+        if elm:
+            list_.append(elm)
+    return list_
 
 
 def remove_duplicate_edges(generated_edges, lista=False):

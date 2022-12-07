@@ -1,6 +1,6 @@
 import networkx as nx
 
-from antecessores import monta_grafo_ant, get_itens_saida_ant
+from antecessores import monta_grafo_ant
 from descendentes import monta_grafo
 from graph_generator import draw_graph
 from utils import is_char_a2z, jsonify_nodes_edges, read_csv_file
@@ -13,6 +13,7 @@ if __name__ == '__main__':
     all_edges = []
     no_origem_anterior = []
     itens_entrada = []
+    no_destino = ""
     no_inicial = input('Digite o no inicial: ').upper()
     grupo = input('Informe o grupo da schedule, em caso de prévias, ou apenas tecle enter ').upper()
     tipo_grafo = input('Tipo do grafo [1 - sucessores, 2 - antecessores] ')
@@ -43,7 +44,7 @@ if __name__ == '__main__':
             grupo = grupo[1:]
 
         mapa = nx.Graph()
-        monta_grafo_ant(no_inicial, edges, get_itens_saida_ant(), mapa, entrada, saida, all_edges, no_origem_anterior)
+        monta_grafo_ant(no_inicial, edges, no_destino, mapa, entrada, saida, all_edges, no_origem_anterior)
 
         # gerar executavel
         edges_gerados = all_edges  # get_edges()
