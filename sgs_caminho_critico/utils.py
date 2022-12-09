@@ -1,10 +1,34 @@
 import csv
 import json
 import re
-from datetime import date
-from os.path import exists
 import os
-# import glob
+from os.path import exists
+from datetime import date, timedelta, datetime
+
+
+# testa se a data do mapa já expirou
+def is_date_limit_out_of_bounds(limit_days, file_date_str):
+    new_final_date = date.today() + timedelta(days=2)
+    file_date = datetime.strptime(file_date_str, '%Y-%m-%d').date()
+    return (new_final_date - file_date).days > limit_days
+
+
+# gera json de configuração de tempo limite dos mapas por rotina e tipo
+def write_cfg_json(path):
+    csv_config = path + 'config_files.csv'
+    json_config = path + 'config_files.json'
+    json_array = [*csv.DictReader(open(csv_config, encoding='utf-8'))]
+    with open(json_config, 'w', encoding='utf-8') as jsonf:
+        jsonf.write(json.dumps(json_array, indent=4))
+    jsonf.close()
+
+
+# retorna json a partir do cfg json
+def get_cfg_json_contents_list(json_name):
+    f = open(json_name)
+    data = json.load(f)
+    f.close()
+    return data
 
 
 def remove_files_by_matching_pattern(dir_path, pattern):
