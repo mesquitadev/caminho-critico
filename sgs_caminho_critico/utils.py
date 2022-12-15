@@ -14,9 +14,9 @@ def is_date_limit_out_of_bounds(limit_days, file_date_str):
 
 
 # gera json de configuração de tempo limite dos mapas por rotina e tipo
-def write_cfg_json(path):
-    csv_config = path + 'config_files.csv'
-    json_config = path + 'config_files.json'
+def create_json_from_csv(path, file_name):
+    csv_config = f'{path}{file_name}.csv'
+    json_config = f'{path}{file_name}.json'
     json_array = [*csv.DictReader(open(csv_config, encoding='utf-8'))]
     with open(json_config, 'w', encoding='utf-8') as jsonf:
         jsonf.write(json.dumps(json_array, indent=4))
@@ -24,18 +24,19 @@ def write_cfg_json(path):
 
 
 # retorna json a partir do cfg json
-def get_cfg_json_contents_list(json_name):
-    f = open(json_name)
+def get_json_file_contents(path, file_name):
+    f = open(f'{path}{file_name}.json')
     data = json.load(f)
     f.close()
     return data
 
 
-def remove_files_by_matching_pattern(dir_path, pattern):
+def remove_files_by_pattern(dir_path, pattern, file_new):
     list_of_files_with_error = []
     for parent_dir, dir_names, filenames in os.walk(dir_path):
         for filename in filenames:
-            if pattern.findall(filename):
+            if pattern.findall(filename) and filename != file_new:
+                # se arquivo expirou prossegue, senão continue
                 try:
                     os.remove(os.path.join(parent_dir, filename))
                 except OSError:
@@ -100,6 +101,13 @@ def get_file_name(routine, graph_type, plex, group):
     return f'{routine.lower()}_{plex}_{graph_type}_{group}_{data}.json'
 
 
+def make_file_names(json_file_names):
+    file_names = []
+    for file in json_file_names:
+        file_names.append(get_file_name(file.mapa.value, file.tipo.value, file.plex.value, file.grupo.value))
+    return file_names
+
+
 def save_graph_to_file(graph_json, path, json_graph_filename):
     json_object = json.dumps(graph_json)
     result = False
@@ -141,7 +149,7 @@ def remove_duplicate_tuples(duplicated_list):
 def remove_empty_elements(dicio):
     list_ = []
     for elm in dicio:
-        if elm:
+        if elm and len(elm[0][0]) > 1 and len(elm[0][1]) > 1:
             list_.append(elm)
     return list_
 
@@ -156,9 +164,9 @@ def remove_duplicate_edges(generated_edges, lista=False):
                 else:
                     generated_edges_no_duplicates.append(item[0])
             else:
-                print(f'generated_edges has an element not equal {item}')
+                # print(f'generated_edges has an element not equal {item}')
                 for it in item:
-                    generated_edges_no_duplicates.append(it)
+                    generated_edges_no_duplicates.append([it])
         else:
             generated_edges_no_duplicates.append(item)
     return generated_edges_no_duplicates
@@ -170,7 +178,6 @@ def insert_nodes(id_origem, id_value, empty_value, zero_value, value_passed, val
 
 
 def insert_edges(id_edge, id_origem, id_destino, empty_value="", zero_value=0):
-    print(empty_value)
     return {"id": str(id_edge), "source": str(id_origem), "target": str(id_destino), "mainStat": zero_value}
 
 
@@ -188,7 +195,7 @@ def jsonify_nodes_edges(generated_edges):
     dicio_edges = []
     i = 1
     id_edge = 0
-    generated_edges = remove_duplicate_edges(generated_edges, lista=True)
+    generated_edges = remove_duplicates_from_list(remove_duplicate_edges(generated_edges, lista=True))  # remove extra)
     for elm in generated_edges:
         id_origem = i
         value_passed = 1.0
@@ -233,5 +240,31 @@ def jsonify_nodes_edges(generated_edges):
     result = {"edges": dicio_edges,
               "nodes": dicio_nodes
               }
-    print(f'json puro {result}')
+    # print(f'json puro {result}')
+    return result
+
+
+def remove_duplicates_from_list(dup_list: list):
+    no_dup_list = []
+    for elm in dup_list:
+        if elm not in no_dup_list:
+            no_dup_list.append(elm)
+    return no_dup_list
+
+
+def remove_single_letter_from_list(dup_list: list):
+    no_dup_list = []
+    for elm in dup_list:
+        if elm not in no_dup_list and len(elm.title) > 1:
+            no_dup_list.append(elm)
+    return no_dup_list
+
+
+def jsonify_parent_son(generated_edges):
+    dicio_nodes = []
+    generated_edges = remove_duplicates_from_list(remove_duplicate_edges(generated_edges, lista=True))
+    for elm in generated_edges:
+        nodes = {'parent': elm[0][0], 'son': elm[0][1]}
+        dicio_nodes.append(nodes)
+    result = {"mapa": dicio_nodes}
     return result
