@@ -7,8 +7,8 @@ from fastapi.responses import JSONResponse
 from antecessores import monta_grafo_ant
 from descendentes import monta_grafo
 from utils import jsonify_nodes_edges, read_csv_file, save_graph_to_file, get_file_name, \
-    exists_json_file, get_json_content, remove_files_by_pattern, remove_empty_elements, create_json_from_csv, \
-    jsonify_parent_son
+    is_file_exists, get_json_content, remove_files_by_pattern, remove_empty_elements, create_json_from_csv, \
+    jsonify_parent_son, create_condex_lists, create_condex_file_from_list, combine_condin_condex_files
 import aiofiles
 
 app = FastAPI()
@@ -82,7 +82,7 @@ def fetch_graph_data(rotina=None, grupo=None, tipo=1, ambiente='br'):
     extension = ".json"
     file2_remove = re.compile(f"({json_file_name[:-15]})({end_part}{extension})")
     remove_files_by_pattern(path, file2_remove, json_file_name)
-    if exists_json_file(path, json_file_name):
+    if is_file_exists(path, json_file_name):
         return get_json_content(path, json_file_name)
 
     if tipo == '1':
@@ -113,5 +113,30 @@ def fetch_graph_data(rotina=None, grupo=None, tipo=1, ambiente='br'):
 def fetch_graph_text(rotina=None, tipo=1, ambiente='br'):
     path = os.getenv('CSV_FILES')
     map_name = f'm_{rotina}_{ambiente}_{tipo}.json'.upper()
-    if exists_json_file(path, map_name):
+    if is_file_exists(path, map_name):
         return get_json_content(path, map_name)
+
+
+@app.post('/api/graph/unite_conds')
+def combine_condex(condex_file, previas_jcl, wrk_in_file, wrk_out_file, ambiente='br', delimiter=';'):
+    try:
+        path = os.getenv('CSV_FILES')
+        condex_in_file = f'{ambiente}_ex_in.csv'.lower()  # br_ex_in.csv - tmp file apagar
+        condex_out_file = f'{ambiente}_ex_out.csv'.lower()  # br_ex_out.csv - tmp file apagar
+        condin_file = f'{ambiente}_cond_in.csv'.lower()  # "br_cond_in.csv" - relatório vindo ctm
+        condout_file = f'{ambiente}_cond_out.csv'.lower()  # "br_cond_out.csv" - relatório vindo ctm
+        condex_file = condex_file.lower()  # condicoes_externas.csv, obtido do arquivo do thiago ===>> automatizar criação zowe
+        previas_jcl = previas_jcl.lower()  # previas_jcl.csv obtido db2, manter esta base sempre
+
+        # gera listas de condições externas
+        condex_in_lst, condex_out_lst = create_condex_lists(path=path, csv_source=condex_file,
+                                                            previas_jcl=previas_jcl, delimiter=delimiter)
+        # gera arquivos de condições externas já formatados a partir da respectiva lista de condições externas
+        create_condex_file_from_list(condex_in_lst, condex_in_file, path_=path)  # "br_in_ex.csv"
+        create_condex_file_from_list(condex_out_lst, condex_out_file, path_=path)  # "br_out_ex.csv"
+        # combina arquivos de condições internas e externas, gerando arquivo de trabalho do algoritmo
+        combine_condin_condex_files([condin_file, condex_in_file], wrk_in_file, path_=path)  # wrk = br_in.csv
+        combine_condin_condex_files([condout_file, condex_out_file], wrk_out_file, path_=path)  # wrk = br_out.csv
+        return 'Arquivos gerados com sucesso'
+    except FileNotFoundError or FileExistsError:
+        return 'Algum arquivo está faltando para gerar os arquivos base'

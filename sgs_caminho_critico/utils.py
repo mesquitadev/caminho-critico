@@ -6,6 +6,112 @@ from os.path import exists
 from datetime import date, timedelta, datetime
 
 
+def csv_to_dict(path, filename, key_):
+    filename = f'{path}\\{filename}'
+    d = {}
+    file = open(filename)
+    for i in csv.DictReader(file):
+        d[dict(i)[key_]] = dict(i)
+    return d
+
+
+def is_dict_key(dic, key):
+    return True if key in dic.keys() else False
+
+
+def get_no_duplicates_list(lista):
+    return sorted(set(lista))
+
+
+def remove_trailing_spaces(string: str, direction: str):
+    if direction == 'r':
+        return string.rstrip(" ")
+    elif direction == 'l':
+        return string.lstrip(" ")
+    else:
+        return string.lstrip(" ").rstrip(" ")
+
+
+def create_condex_file_from_list(lista_, nome_, path_):
+    with open(f'{path_}\\{nome_}', "w") as cdex:
+        end_line = lista_[-1]
+        for content in lista_:
+            content = f'{content}\n' if content != end_line else content
+            cdex.writelines(content)
+    cdex.close()
+
+
+def is_path_file_exists(path_plus_file):
+    return os.path.isfile(path_plus_file)
+
+
+def combine_condin_condex_files(input_files, output_file, path_):
+    input_files = [f'{path_}\\{arq}' for arq in input_files]
+    output_file = f'{path_}\\{output_file}'
+
+    if not is_path_file_exists(input_files[0]) or not is_path_file_exists(input_files[1]):
+        raise FileExistsError
+
+    if os.path.isfile(output_file):
+        os.remove(output_file)
+    # if os.path.isfile(output_file):
+    #     os.remove(output_file)
+    fout = open(output_file, "a+")
+    num_linha = 1
+    for input_file in input_files:
+        with open(input_file, "r") as fin:
+            for line in fin:
+                if line != '':  # evita linha em branco
+                    if num_linha == 1:
+                        fout.write(line[:-1])  # evita \n na primeira linha
+                    else:
+                        if line[-1] == '\n':
+                            fout.write('\n' + line[:-1])
+                        else:
+                            fout.write('\n' + line[:])  # evita cortar o último caracter da última linha
+                    num_linha += 1
+    fin.close()
+    fout.close()
+    if is_path_file_exists(input_files[1]):
+        os.remove(input_files[1])
+
+
+def create_condex_lists(path: str, csv_source: str, previas_jcl: str,
+                        delimiter: str):
+    file_name = f'{path}\\{csv_source}'
+    if not is_file_exists(path, previas_jcl) or not is_file_exists(path, csv_source):
+        raise FileNotFoundError
+
+    in_ = []
+    out_ = []
+
+    prev_jcl_base = csv_to_dict(path=path, filename=previas_jcl, key_="previa")
+
+    # montagem das condições externas no padrão das internas
+    with open(file_name, 'r', encoding="utf-8") as file:
+        csvreader = csv.reader(file, delimiter=delimiter)
+        for row in csvreader:
+            # elimina jobs arroba
+            line1 = remove_trailing_spaces(row[0], 'x')
+            if line1.find('@') != -1:
+                continue
+            line2 = remove_trailing_spaces(row[1], 'x')
+            if line2.find('@') != -1:
+                continue
+
+            if is_dict_key(prev_jcl_base, line1):  # troca jobname por jcl
+                line1 = prev_jcl_base[line1]['jcl'].upper()
+
+            # monta lista de condições externas
+            in_.append(f'{line2},FRC_{line1}-FRC_{line2},ODAT,,,GRUPO')
+            out_.append(f'{line1},FRC_{line1}-FRC_{line2},ODAT,+,GRUPO')
+
+    # remove duplicados na lista de condicoes externas
+    in_ = get_no_duplicates_list(in_)
+    out_ = get_no_duplicates_list(out_)
+    return in_, out_
+
+
 # testa se a data do mapa já expirou
 def is_date_limit_out_of_bounds(limit_days, file_date_str):
     new_final_date = date.today() + timedelta(days=2)
@@ -121,7 +227,7 @@ def save_graph_to_file(graph_json, path, json_graph_filename):
         return result
 
 
-def exists_json_file(path, json_graph_filename):
+def is_file_exists(path, json_graph_filename):
     return exists(f'{path}{json_graph_filename}')
 
 
