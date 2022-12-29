@@ -8,7 +8,7 @@ from antecessores import monta_grafo_ant
 from descendentes import monta_grafo
 from pzowe import Pzowe
 from utils import jsonify_nodes_edges, read_csv_file, save_graph_to_file, get_file_name, \
-    is_file_exists, get_json_content, remove_files_by_pattern, remove_empty_elements,  \
+    is_file_exists, get_json_content, remove_files_by_pattern, remove_empty_elements, \
     jsonify_parent_son, create_condex_lists, create_condex_file_from_list, combine_condin_condex_files
 import aiofiles
 
@@ -19,7 +19,7 @@ app = FastAPI()
 async def create_upload_files(files: list[UploadFile]):
     try:
         for file in files:
-            async with aiofiles.open(os.getenv('CSV_FILES')+file.filename, "wb") as f:
+            async with aiofiles.open(os.getenv('CSV_FILES') + file.filename, "wb") as f:
                 content = await file.read()
                 await f.write(content)
     except Exception as e:
@@ -129,6 +129,8 @@ def combine_condex(previas_jcl, wrk_in_file, wrk_out_file, ambiente='br', delimi
         # mf_frc_list = pz.get_dataset_contents(os.getenv('FRC_DTSET')) if pz.is_logged(ambiente.upper()) else None # arquivo de forces jcl
         mf_frc_list = mf_frc_list[1].split('\n') if mf_frc_list is not None and mf_frc_list[0] == 'ok' else None
         path = os.getenv('CSV_FILES')
+        path = path[:-1] if path[-1] == ';' else path
+        path = path + "\\" if path[-1] != "\\" else path
         condex_in_file = f'{ambiente}_ex_in.csv'.lower()  # br_ex_in.csv - tmp file apagar
         condex_out_file = f'{ambiente}_ex_out.csv'.lower()  # br_ex_out.csv - tmp file apagar
         condin_file = f'{ambiente}_cond_in.csv'.lower()  # "br_cond_in.csv" - relatório vindo ctm
