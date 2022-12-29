@@ -33,7 +33,7 @@ def remove_trailing_spaces(string: str, direction: str):
 
 
 def create_condex_file_from_list(lista_, nome_, path_):
-    with open(f'{path_}\\{nome_}', "w") as cdex:
+    with open(f'{path_}{nome_}', "w") as cdex:
         end_line = lista_[-1]
         for content in lista_:
             content = f'{content}\n' if content != end_line else content
@@ -46,8 +46,8 @@ def is_path_file_exists(path_plus_file):
 
 
 def combine_condin_condex_files(input_files, output_file, path_):
-    input_files = [f'{path_}\\{arq}' for arq in input_files]
-    output_file = f'{path_}\\{output_file}'
+    input_files = [f'{path_}{arq}' for arq in input_files]
+    output_file = f'{path_}{output_file}'
 
     if not is_path_file_exists(input_files[0]) or not is_path_file_exists(input_files[1]):
         raise FileExistsError
@@ -78,8 +78,8 @@ def combine_condin_condex_files(input_files, output_file, path_):
 
 def create_condex_lists(path: str, csv_source: str, previas_jcl: str,
                         delimiter: str):
-    file_name = f'{path}\\{csv_source}'
-    if not is_file_exists(path, previas_jcl) or not is_file_exists(path, csv_source):
+    # file_name = f'{path}{csv_source}'
+    if not is_file_exists(path, previas_jcl):  # or not is_file_exists(path, csv_source):
         raise FileNotFoundError
 
     in_ = []
@@ -88,23 +88,26 @@ def create_condex_lists(path: str, csv_source: str, previas_jcl: str,
     prev_jcl_base = csv_to_dict(path=path, filename=previas_jcl, key_="previa")
 
     # montagem das condições externas no padrão das internas
-    with open(file_name, 'r', encoding="utf-8") as file:
-        csvreader = csv.reader(file, delimiter=delimiter)
-        for row in csvreader:
-            # elimina jobs arroba
-            line1 = remove_trailing_spaces(row[0], 'x')
-            if line1.find('@') != -1:
-                continue
-            line2 = remove_trailing_spaces(row[1], 'x')
-            if line2.find('@') != -1:
-                continue
+    # with open(file_name, 'r', encoding="utf-8") as file:
+    #     csvreader = csv.reader(file, delimiter=delimiter)
+    for elm in csv_source:
+        if elm == '':  # elimina último registro em branco do arquivo
+            continue
+        row = elm.split(';')
+        # elimina jobs arroba
+        line1 = remove_trailing_spaces(row[0], 'x')
+        if line1.find('@') != -1:
+            continue
+        line2 = remove_trailing_spaces(row[1], 'x')
+        if line2.find('@') != -1:
+            continue
 
-            if is_dict_key(prev_jcl_base, line1):  # troca jobname por jcl
-                line1 = prev_jcl_base[line1]['jcl'].upper()
+        if is_dict_key(prev_jcl_base, line1):  # troca jobname por jcl
+            line1 = prev_jcl_base[line1]['jcl'].upper()
 
-            # monta lista de condições externas
-            in_.append(f'{line2},FRC_{line1}-FRC_{line2},ODAT,,,GRUPO')
-            out_.append(f'{line1},FRC_{line1}-FRC_{line2},ODAT,+,GRUPO')
+        # monta lista de condições externas
+        in_.append(f'{line2},FRC_{line1}-FRC_{line2},ODAT,,,GRUPO')
+        out_.append(f'{line1},FRC_{line1}-FRC_{line2},ODAT,+,GRUPO')
 
     # remove duplicados na lista de condicoes externas
     in_ = get_no_duplicates_list(in_)
@@ -121,8 +124,8 @@ def is_date_limit_out_of_bounds(limit_days, file_date_str):
 
 # gera json de configuração de tempo limite dos mapas por rotina e tipo
 def create_json_from_csv(path, file_name):
-    csv_config = f'{path}{file_name}.csv'
-    json_config = f'{path}{file_name}.json'
+    csv_config = f'{path}\\{file_name}.csv'
+    json_config = f'{path}\\{file_name}.json'
     json_array = [*csv.DictReader(open(csv_config, encoding='utf-8'))]
     with open(json_config, 'w', encoding='utf-8') as jsonf:
         jsonf.write(json.dumps(json_array, indent=4))
@@ -283,7 +286,7 @@ def insert_nodes(id_origem, id_value, empty_value, zero_value, value_passed, val
             "secondaryStat": zero_value, "arc__failed": value_failed, "arc__passed": value_passed}
 
 
-def insert_edges(id_edge, id_origem, id_destino, empty_value="", zero_value=0):
+def insert_edges(id_edge, id_origem, id_destino, zero_value=0):  # retirado empty_value=""
     return {"id": str(id_edge), "source": str(id_origem), "target": str(id_destino), "mainStat": zero_value}
 
 
@@ -340,13 +343,12 @@ def jsonify_nodes_edges(generated_edges):
         else:
             dicio_nodes.append(nodes)
 
-        edges = insert_edges(id_edge=id_edge, id_origem=id_origem, id_destino=id_destino, empty_value="", zero_value=0)
+        edges = insert_edges(id_edge=id_edge, id_origem=id_origem, id_destino=id_destino, zero_value=0)
         dicio_edges.append(edges)
         id_edge += 1
     result = {"edges": dicio_edges,
               "nodes": dicio_nodes
               }
-    # print(f'json puro {result}')
     return result
 
 
@@ -374,3 +376,54 @@ def jsonify_parent_son(generated_edges):
         dicio_nodes.append(nodes)
     result = {"mapa": dicio_nodes}
     return result
+
+
+def is_text_in_line(line, text):
+    return text in line
+
+
+def find_content_in_list(lista: list, valor: str) -> int:
+    # procura string em uma lista de elementos e retorna o elemento onde ela existe ou -1 caso contrário
+    try:
+        posicao = [(lista.index(x)) for x in lista if valor in x]
+        if len(posicao) > 0:
+            return posicao[0]
+        else:
+            return -1
+    except IndexError:
+        return -1
+
+
+def find_content_in_list_interval(lista: list, valor: str, begin: int, end: int):
+    # procura string em um intervalo de lista retorna o índice ou -1 caso contrário
+    if begin == -1 or end == -1:
+        return -1
+    posicao = [i for i in range(begin, end + 1, 1) if valor in lista[i] and '//*' not in lista[i]]
+    return -1 if not posicao else sorted(posicao)[0]
+
+
+def find_content_in_list_of_dict(lista: list, key1, key2: str, valor: str) -> int:
+    # procura string em uma lista de dicionarios e retorna se o elemento existe ou -1 caso contrário
+    try:
+        list_content = lista[key1] if key1 != '' else lista
+        for elm in list_content:
+            if valor == elm[key2] if key2 != '' else elm:
+                return 1
+    except IndexError:
+        return -1
+    return -1
+
+
+def is_substring_on_string(linha: str, substring: str) -> bool:
+    if substring in linha:
+        return True
+    else:
+        return False
+
+
+def position_of_substring_on_string(linha: str, substring: str) -> int:
+    try:
+        position = linha.find(substring)
+        return position
+    except IndexError:
+        return -1

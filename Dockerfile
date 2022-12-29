@@ -56,7 +56,7 @@ COPY skip-ssl-check /etc/apt/apt.conf.d/skip-ssl-check
 COPY supervisord.conf /etc/supervisord.conf
 
 
-
+# dnsutils=1:9.16.27-1~deb11u1 \
 
 RUN mkdir /csv && \
     apt-get update && \
@@ -64,7 +64,6 @@ RUN mkdir /csv && \
                        supervisor=4.2.2-2 \
                        iputils-ping=3:20210202-1 \
                        telnet=0.17-42 \
-                       dnsutils=1:9.16.27-1~deb11u1 \
                        nginx=1.18.0-6.1+deb11u3 && \
     apt-get clean && \
     chown www-data:www-data /sgs_caminho_critico -R && \
