@@ -130,8 +130,8 @@ class Pzowe:
         return "https://" + self.servidores[self.svr.upper()]
 
     def is_logged(self, amb) -> bool:
-        self.user = os.getenv('USER')
-        self.pwd = os.getenv('PWD')
+        self.user = os.getenv('ZWE_USER')
+        self.pwd = os.getenv('ZWE_PWD')
         self.svr = amb.upper()
         return True if self.logon_zowe(ambiente=self.svr) != 'erro' else False
 
