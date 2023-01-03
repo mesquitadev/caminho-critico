@@ -11,6 +11,44 @@ def get_item_by_node_ant(node_label, list_name, i, tipo='+'):
     return itens
 
 
+def get_input_condition_by_routine(node_label, input_file):
+    return get_item_by_node_ant(node_label=node_label, list_name=input_file, i=0)
+
+
+def get_target_routines_by_cond(condition, output_file):
+    return get_item_by_node_ant(node_label=condition, list_name=output_file, i=1)
+
+
+def monta_grafo_antv2(no_inicial, edges, origem, mapa, entrada, saida, all_edges, edges_count,
+                      equal_edges, repeated_conds, empty_edges):  # itens_saida
+    destino = get_input_condition_by_routine(no_inicial, entrada)  # itens_entrada  # entrada  # 0
+    # captura as condições dos nós de entrada
+    for v in destino:  # itens_entrada
+        cond_inicial = v[1]  # captura condições para busca no outro arquivo
+        origem = get_target_routines_by_cond(cond_inicial, saida)  # itens_saida # saida
+        edges = build_edges_predecessors(no_inicial, origem)  # itens_saida
+        if edges in all_edges:
+            repeated_conds += 1
+            # limita em caso de inúmeras prévias evita estouro recursão
+            if repeated_conds > 500:
+                break
+            else:
+                continue
+        if not edges:
+            empty_edges += 1
+            continue
+        mapa.add_edges_from(edges)
+        all_edges.append(edges)
+        edges_count += 1
+        edges = []
+    for no_inicio in origem:  # itens_saida
+        if no_inicio[0] == no_inicial:
+            equal_edges += 1
+            continue
+        monta_grafo_antv2(no_inicio[0], edges, origem, mapa, entrada, saida, all_edges,
+                          edges_count, equal_edges, repeated_conds, empty_edges)  # itens_saida
+
+
 def monta_grafo_ant(no_origem, edges, no_destino, mapa, entrada, saida, all_edges, no_origem_anterior):
     if no_origem:
         no_origem = get_item_by_node_ant(no_origem, entrada, 0)  # itens_entrada  # entrada  # 0

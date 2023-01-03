@@ -1,16 +1,17 @@
 import os
 import re
+
+import aiofiles
 import networkx as nx
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import JSONResponse
 
-from antecessores import monta_grafo_ant
+from antecessores import monta_grafo_antv2
 from descendentes import monta_grafo
 from pzowe import Pzowe
 from utils import jsonify_nodes_edges, read_csv_file, save_graph_to_file, get_file_name, \
     is_file_exists, get_json_content, remove_files_by_pattern, remove_empty_elements, \
     jsonify_parent_son, create_condex_lists, create_condex_file_from_list, combine_condin_condex_files
-import aiofiles
 
 app = FastAPI()
 
@@ -60,7 +61,7 @@ def fetch_graph_data(rotina=None, grupo=None, tipo=1, ambiente='br'):
     all_edges = []
     no_origem_anterior = []
     itens_entrada = []
-    itens_saida = []
+    # itens_saida = []
     group = 'ng' if grupo is None else 'ng'  # -> retirei grupo até ver como a lógica vai lidar com isso else grupo
 
     path = os.getenv('CSV_FILES')
@@ -91,10 +92,17 @@ def fetch_graph_data(rotina=None, grupo=None, tipo=1, ambiente='br'):
         group = ''  # if group == 'ng' else group -> retirado grupo aqui até ver como lógica vai lidar com isso
         monta_grafo(no_inicial, group, edges, itens_entrada, mapa, entrada, saida, all_edges, no_origem_anterior)
     else:  # antecedentes
+        edges_count = 0
+        equal_edges = 0
+        repeated_conds = 0
+        empty_edges = 0
         # group = ''  # if group == 'ng' else group -> retirado grupo aqui até ver como lógica vai lidar com isso
         mapa = nx.Graph()
-        monta_grafo_ant(no_origem=no_inicial, edges=edges, no_destino=itens_saida, mapa=mapa, entrada=entrada,
-                        saida=saida, all_edges=all_edges, no_origem_anterior=no_origem_anterior)
+        monta_grafo_antv2(no_inicial=no_inicial, edges=edges, origem=itens_entrada, mapa=mapa, entrada=entrada,
+                          saida=saida, all_edges=all_edges, edges_count=edges_count, equal_edges=equal_edges,
+                          repeated_conds=repeated_conds, empty_edges=empty_edges)
+        # monta_grafo_ant(no_origem=no_inicial, edges=edges, no_destino=itens_saida, mapa=mapa, entrada=entrada,
+        #                 saida=saida, all_edges=all_edges, no_origem_anterior=no_origem_anterior)
 
     map_text_name = f'm_{json_file_name[:-19]}.json'.upper()
 
