@@ -130,8 +130,12 @@ def fetch_graph_text(rotina=None, tipo=1, ambiente='br'):
 def combine_condex(previas_jcl, wrk_in_file, wrk_out_file, ambiente='br', delimiter=';'):
     try:
         pz = Pzowe()
-        if pz.is_logged(ambiente.upper()):
-            mf_frc_list = pz.get_dataset_contents(os.getenv('FRC_DTSET'))
+        amb = ambiente.upper()
+        if pz.is_logged(amb):
+            hlq = pz.hlq[amb][0]
+            part_file = os.getenv('FRC_DTSET')
+            frc_file = f'{hlq}.{part_file}'
+            mf_frc_list = pz.get_dataset_contents(frc_file)
         else:
             mf_frc_list = None
         # mf_frc_list = pz.get_dataset_contents(os.getenv('FRC_DTSET')) if pz.is_logged(ambiente.upper()) else None # arquivo de forces jcl
