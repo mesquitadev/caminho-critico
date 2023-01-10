@@ -136,6 +136,10 @@ def combine_condex(previas_jcl, wrk_in_file, wrk_out_file, ambiente='br', delimi
             part_file = os.getenv('FRC_DTSET')
             frc_file = f'{hlq}.{part_file}'
             mf_frc_list = pz.get_dataset_contents(frc_file)
+            arq_aux = 'BRP.PCP.NTE700.D230103.BR.NT234913.SS000101'
+            aux = pz.get_dataset_contents(arq_aux)
+            linhas = aux[1].splitlines()
+            body = [it for it in linhas if it[0] == '4']
         else:
             mf_frc_list = None
         # mf_frc_list = pz.get_dataset_contents(os.getenv('FRC_DTSET')) if pz.is_logged(ambiente.upper()) else None # arquivo de forces jcl
@@ -143,13 +147,14 @@ def combine_condex(previas_jcl, wrk_in_file, wrk_out_file, ambiente='br', delimi
         path = os.getenv('CSV_FILES')
         path = path[:-1] if path[-1] == ';' else path
         path = path + "\\" if path[-1] != "\\" else path
+        cond_via_jcl = f'{ambiente}_cond_via_jcl.csv'.lower() # br_cond_via_jcl.csv inserir em br_out.csv
         condex_in_file = f'{ambiente}_ex_in.csv'.lower()  # br_ex_in.csv - tmp file apagar
         condex_out_file = f'{ambiente}_ex_out.csv'.lower()  # br_ex_out.csv - tmp file apagar
         condin_file = f'{ambiente}_cond_in.csv'.lower()  # "br_cond_in.csv" - relatório vindo ctm
         condout_file = f'{ambiente}_cond_out.csv'.lower()  # "br_cond_out.csv" - relatório vindo ctm
         # condex_file = condex_file.lower()  # condicoes_externas.csv, obtido do arquivo do thiago ===>> automatizar criação zowe
         previas_jcl = previas_jcl.lower()  # previas_jcl.csv obtido db2, manter esta base sempre
-
+        wrk_out_tmp_file = f'tmp_{wrk_out_file}'
         # gera listas de condições externas era condex_file
         condex_in_lst, condex_out_lst = create_condex_lists(path=path, csv_source=mf_frc_list,
                                                             previas_jcl=previas_jcl, delimiter=delimiter)
@@ -158,7 +163,9 @@ def combine_condex(previas_jcl, wrk_in_file, wrk_out_file, ambiente='br', delimi
         create_condex_file_from_list(condex_out_lst, condex_out_file, path_=path)  # "br_out_ex.csv"
         # combina arquivos de condições internas e externas, gerando arquivo de trabalho do algoritmo
         combine_condin_condex_files([condin_file, condex_in_file], wrk_in_file, path_=path)  # wrk = br_in.csv
-        combine_condin_condex_files([condout_file, condex_out_file], wrk_out_file, path_=path)  # wrk = br_out.csv
+        combine_condin_condex_files([condout_file, condex_out_file], wrk_out_tmp_file, path_=path)  # wrk = tmp_br_out.csv
+        combine_condin_condex_files([wrk_out_tmp_file, cond_via_jcl], wrk_out_file, path_=path,
+                                    file_nb=0)  # wrk = br_out.csv apaga tmp_br_out.csv wrk_out_tmp_file primeiro
         return 'Arquivos gerados com sucesso'
     except FileNotFoundError or FileExistsError:
         return 'Algum arquivo está faltando para gerar os arquivos base'

@@ -45,7 +45,7 @@ def is_path_file_exists(path_plus_file):
     return os.path.isfile(path_plus_file)
 
 
-def combine_condin_condex_files(input_files, output_file, path_):
+def combine_condin_condex_files(input_files, output_file, path_, file_nb=1):
     input_files = [f'{path_}{arq}' for arq in input_files]
     output_file = f'{path_}{output_file}'
 
@@ -54,8 +54,6 @@ def combine_condin_condex_files(input_files, output_file, path_):
 
     if os.path.isfile(output_file):
         os.remove(output_file)
-    # if os.path.isfile(output_file):
-    #     os.remove(output_file)
     fout = open(output_file, "a+")
     num_linha = 1
     for input_file in input_files:
@@ -72,12 +70,12 @@ def combine_condin_condex_files(input_files, output_file, path_):
                     num_linha += 1
     fin.close()
     fout.close()
-    if is_path_file_exists(input_files[1]):
-        os.remove(input_files[1])
+    if is_path_file_exists(input_files[file_nb]):
+        os.remove(input_files[file_nb])
 
 
 def create_condex_lists(path: str, csv_source: str, previas_jcl: str,
-                        delimiter: str):
+                        delimiter: str = ";"):
     # file_name = f'{path}{csv_source}'
     if not is_file_exists(path, previas_jcl):  # or not is_file_exists(path, csv_source):
         raise FileNotFoundError
@@ -93,7 +91,7 @@ def create_condex_lists(path: str, csv_source: str, previas_jcl: str,
     for elm in csv_source:
         if elm == '':  # elimina último registro em branco do arquivo
             continue
-        row = elm.split(';')
+        row = elm.split(delimiter)
         # elimina jobs arroba
         line1 = remove_trailing_spaces(row[0], 'x')
         if line1.find('@') != -1:
