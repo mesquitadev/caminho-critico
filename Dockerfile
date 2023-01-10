@@ -56,8 +56,6 @@ COPY skip-ssl-check /etc/apt/apt.conf.d/skip-ssl-check
 COPY supervisord.conf /etc/supervisord.conf
 
 
-# dnsutils=1:9.16.27-1~deb11u1 \
-
 RUN mkdir /csv && \
     apt-get update && \
     apt-get install --no-install-recommends -y vim=2:8.2.2434-3+deb11u1 \
