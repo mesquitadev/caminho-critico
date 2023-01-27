@@ -1,12 +1,135 @@
 import csv
 import json
-import re
 import os
-from os.path import exists
+import re
 from datetime import date, timedelta, datetime
+from os.path import exists
+
+import requests
+from dateutil.relativedelta import relativedelta
 
 
-def csv_to_dict(path, filename, key_):
+def format_condjcl_list(lista_: list[str]) -> list[str]:
+    """
+        recebe lista original da leitura do dataset de condições via jcl
+        formata para poder inserir nos dados gerais de condição de saída
+    """
+    lista = []
+    for elm in lista_:
+        if elm == "":
+            continue
+        parts = elm.split(";")
+        line = f'{parts[0].rstrip()},S3-{parts[0].rstrip()}-{parts[1].rstrip().lstrip()},ODAT,+,GRUPO'
+        lista.append(line)
+    return lista
+
+
+def list2string(lista, sep):
+    return sep.join(lista)
+
+
+def get_diff_between_dates(date1: date, date2: date):
+    """
+        retorna diferença entre duas datas ex.: date(2016,12,30)
+    """
+    delta = date2 - date1
+    return delta.days
+
+
+def get_date_plus_added_time(data: date, time_type: str, added_value: int) -> date:
+    """
+        retorna data mais quantidade de meses ou anos cfe M ou Y
+        params
+        date data como em date(ano, mes, dia)
+        time_type: como em M ou Y
+        added_value: quantidade numérica
+    """
+    returned_data: date = date(1, 1, 1)
+    # data = date.split('-')
+    # data_date = date(data.year,data.month,data.day)
+    if time_type == 'M':
+        returned_data = date(data.year, data.month, data.day) + relativedelta(months=added_value)
+    elif time_type == 'Y':
+        returned_data = date(data.year, data.month, data.day) + relativedelta(years=added_value)
+    return returned_data
+
+
+def get_date_minus_added_time(data: date, time_type: str, added_value: int) -> date:
+    """
+        retorna data mais quantidade de meses ou anos cfe M ou Y
+        params
+        date data como em date(ano, mes, dia)
+        time_type: como em M ou Y
+        added_value: quantidade numérica
+    """
+    returned_data: date = date(1, 1, 1)
+    if time_type == 'M':
+        returned_data = date(data.year, data.month, data.day) - relativedelta(months=added_value)
+    elif time_type == 'Y':
+        returned_data = date(data.year, data.month, data.day) - relativedelta(years=added_value)
+    return returned_data
+
+
+def get_current_date_type(date_type: str):
+    months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ']
+    if date_type == 'D':
+        return str(datetime.now().strftime('%d'))
+    elif date_type == 'M':
+        return months[int(datetime.now().strftime('%m')) - 1]
+    elif date_type == 'DT':
+        return f"{str(datetime.now().strftime('%Y'))}-" \
+               f"{str(datetime.now().strftime('%m'))}-" \
+               f"{str(datetime.now().strftime('%d'))}"
+    else:
+        return str(datetime.now().strftime('%y'))
+
+
+def list2csv(path, filename, lista_, mode='a+'):
+    with open(f'{path}{filename}', mode) as f:
+        end_line = lista_[-1]
+        for content in lista_:
+            content = f'{content}\n' if content != end_line else content
+            f.writelines(content)
+
+
+def complex_list2csv(path, filename, lista_, func, begin, end, mode='a+'):
+    with open(f'{path}\\{filename}', mode) as f:
+        end_line = lista_[-1]
+        for content in lista_:
+            treated_content = func(content, begin, end)
+            treated_content = f'{treated_content}' if treated_content != end_line else treated_content
+            f.writelines(treated_content)
+
+
+def get_added_cond_via_jcl_line(list_: list, begin: int, end: int) -> str:
+    retorno = ""
+    for item in list_:
+        it = list(item[begin:end + 1])
+        it[0] = remove_trailing_spaces(it[0], 'r')
+        it[1] = remove_trailing_spaces(it[1], 'r')
+        retorno += f"{','.join(it)},ODAT,+,GRUPO\n"
+    return retorno
+
+
+def get_condjcl_file_name(hlq: str, cnd_part_file: str) -> str:
+    cnd_file = f'{hlq}.{cnd_part_file[1:-1]}'
+    mes = get_current_date_type('M')
+    ano = get_current_date_type('Y')
+    time_def = f'{mes}{ano}'
+    cnd_file_list = cnd_file.split('.')
+    cnd_file_list[4] = time_def
+    return list2string(cnd_file_list, '.')
+
+
+def cria_csv_cond_jcl(path, filename, lista, mode):
+    """
+        Cria arquivo de condições via jcl
+    """
+    lst = format_condjcl_list(lista)
+    list2csv(path, filename, lst, mode)
+
+
+def csv2dict(path, filename, key_):
     filename = f'{path}\\{filename}'
     d = {}
     file = open(filename)
@@ -32,20 +155,20 @@ def remove_trailing_spaces(string: str, direction: str):
         return string.lstrip(" ").rstrip(" ")
 
 
-def create_condex_file_from_list(lista_, nome_, path_):
-    with open(f'{path_}{nome_}', "w") as cdex:
-        end_line = lista_[-1]
-        for content in lista_:
-            content = f'{content}\n' if content != end_line else content
-            cdex.writelines(content)
-    cdex.close()
+def cria_csv_frc_jcl(lista_, nome_, path_, mode="w"):
+    list2csv(path_, nome_, lista_, mode)
 
 
 def is_path_file_exists(path_plus_file):
     return os.path.isfile(path_plus_file)
 
 
-def combine_condin_condex_files(input_files, output_file, path_, file_nb=1):
+def build_added_conds_by_jcl_file(conds_list: list):
+    # here
+    pass
+
+
+def combina_csvs_condicoes_ctm_e_force_jcl(input_files, output_file, path_, file_nb=1):
     input_files = [f'{path_}{arq}' for arq in input_files]
     output_file = f'{path_}{output_file}'
 
@@ -74,8 +197,8 @@ def combine_condin_condex_files(input_files, output_file, path_, file_nb=1):
         os.remove(input_files[file_nb])
 
 
-def create_condex_lists(path: str, csv_source: str, previas_jcl: str,
-                        delimiter: str = ";"):
+def cria_lista_frc_jcl(path: str, csv_source: str, previas_jcl: str,
+                       delimiter: str = ";"):
     # file_name = f'{path}{csv_source}'
     if not is_file_exists(path, previas_jcl):  # or not is_file_exists(path, csv_source):
         raise FileNotFoundError
@@ -83,7 +206,7 @@ def create_condex_lists(path: str, csv_source: str, previas_jcl: str,
     in_ = []
     out_ = []
 
-    prev_jcl_base = csv_to_dict(path=path, filename=previas_jcl, key_="previa")
+    prev_jcl_base = csv2dict(path=path, filename=previas_jcl, key_="previa")
 
     # montagem das condições externas no padrão das internas
     # with open(file_name, 'r', encoding="utf-8") as file:
@@ -425,3 +548,31 @@ def position_of_substring_on_string(linha: str, substring: str) -> int:
         return position
     except IndexError:
         return -1
+
+
+def download_file_by_url(url, file_name):
+    response = requests.get(url, allow_redirects=True)
+    with open(file_name, "wb") as file:
+        file.write(response.content)
+    return f'Relatório {file_name} gerado com sucesso'
+
+
+def build_file_from_dict(file_name, dictionario):
+    with open(file_name, 'w') as file:
+        file.write(json.dumps(dictionario))  # use `json.loads` to do the reverse
+
+
+def ler_csv(filename: str, encode: str):
+    # 'ISO-8859-1'
+    with open(filename, encoding=encode) as file:
+        content = file.readlines()
+    header = content[:1]
+    rows = content[1:]
+    print(header)
+    print(rows)
+
+
+def read_file(file_name):  # dialect=csv.excel, **kwargs
+    with open(file_name, 'r') as f:  # ,  encoding="utf-8"
+        reader = csv.reader(f)
+    return [row for row in reader if row is not None]

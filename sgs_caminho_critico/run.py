@@ -1,5 +1,6 @@
 import os
 import re
+import time
 
 import aiofiles
 import networkx as nx
@@ -7,17 +8,21 @@ from fastapi import FastAPI, UploadFile
 from fastapi.responses import JSONResponse
 
 from antecessores import monta_grafo_antv2
+from ctm import Ctm, get_data_report
+from db import DbConnect
 from descendentes import monta_grafo
 from pzowe import Pzowe
 from utils import jsonify_nodes_edges, read_csv_file, save_graph_to_file, get_file_name, \
     is_file_exists, get_json_content, remove_files_by_pattern, remove_empty_elements, \
-    jsonify_parent_son, create_condex_lists, create_condex_file_from_list, combine_condin_condex_files
+    jsonify_parent_son, cria_lista_frc_jcl, cria_csv_frc_jcl, combina_csvs_condicoes_ctm_e_force_jcl, \
+    download_file_by_url, cria_csv_cond_jcl, get_condjcl_file_name, complex_list2csv, \
+    get_added_cond_via_jcl_line
 
 app = FastAPI()
 
 
-@app.post("/uploadfiles/")
-async def create_upload_files(files: list[UploadFile]):
+@app.post("/api/run/uploadfiles/")
+async def upload_useful_files(files: list[UploadFile]):
     try:
         for file in files:
             async with aiofiles.open(os.getenv('CSV_FILES') + file.filename, "wb") as f:
@@ -49,8 +54,8 @@ def fetch_graph_fields():
     return result
 
 
-@app.get('/api/health')
-def check_health():
+@app.get('/api/run/health')
+def check_api_health():
     return "API is working well! "
 
 
@@ -126,46 +131,100 @@ def fetch_graph_text(rotina=None, tipo=1, ambiente='br'):
         return get_json_content(path, map_name)
 
 
-@app.post('/api/graph/unite_conds')
-def combine_condex(previas_jcl, wrk_in_file, wrk_out_file, ambiente='br', delimiter=';'):
+@app.get("/api/run/report/")
+async def get_condition_ctm_report(report, ambiente):
+    ctm = Ctm(ambiente.upper())
+    ctm.logon()
+    fmt = 'csv'
+
+    data = get_data_report(name=report, fmt_rel=fmt, filter_name='Control-M Server Name', filter_value=ctm.plex)
+    arquivo = f'{ambiente.lower()}{report}.{fmt}'
+    report_data = ctm.roda_relatorio(data)
+    if 'errors' not in report_data:
+        id_report = report_data['reportId']
+        retorno = await ctm.status_relatorio(id_report)
+        download_file_by_url(retorno['url'], f'{os.getenv("CSV_FILES")}\\{arquivo}')
+        return f'Relatório {arquivo} gerado com sucesso!'
+    else:
+        return 'No report generated!'
+
+
+@app.post('/api/run/combina_condicoes')
+def combina_condicoes_ctm_com_externas(arq_previas_jcl, ambiente, delimiter=';'):
     try:
         pz = Pzowe()
         amb = ambiente.upper()
         if pz.is_logged(amb):
             hlq = pz.hlq[amb][0]
-            part_file = os.getenv('FRC_DTSET')
-            frc_file = f'{hlq}.{part_file}'
-            mf_frc_list = pz.get_dataset_contents(frc_file)
-            arq_aux = 'BRP.PCP.NTE700.D230103.BR.NT234913.SS000101'
-            aux = pz.get_dataset_contents(arq_aux)
-            linhas = aux[1].splitlines()
-            body = [it for it in linhas if it[0] == '4']
+            # le datasets force jcl e condicoes via jcl
+            frc_part_file = os.getenv('FRC_DTSET')
+            cond_part_file = os.getenv('FRCFTS_DTSET')
+            frc_file = f'{hlq}.{frc_part_file}'
+            force_cnd_fts_file = get_condjcl_file_name(hlq=hlq, cnd_part_file=cond_part_file)
+            lista_arq_force_jcl = pz.get_dataset_contents(frc_file)
+            lista_arq_cnd_jcl = pz.get_dataset_contents(force_cnd_fts_file)
         else:
-            mf_frc_list = None
-        # mf_frc_list = pz.get_dataset_contents(os.getenv('FRC_DTSET')) if pz.is_logged(ambiente.upper()) else None # arquivo de forces jcl
-        mf_frc_list = mf_frc_list[1].split('\n') if mf_frc_list is not None and mf_frc_list[0] == 'ok' else None
+            lista_arq_force_jcl = None
+            lista_arq_cnd_jcl = None
+
+        # arquivos úteis
+        csv_cond_entrada = f'{ambiente}_in.csv'
+        csv_cond_saida = f'{ambiente}_out.csv'
+        csv_tmp_cond_saida = f'tmp_{csv_cond_saida}'
+        lista_arq_force_jcl = lista_arq_force_jcl[1].split('\n') \
+            if lista_arq_force_jcl is not None and lista_arq_force_jcl[0] == 'ok' else None
+        lista_arq_cnd_jcl = lista_arq_cnd_jcl[1].split('\n') \
+            if lista_arq_cnd_jcl is not None and lista_arq_cnd_jcl[0] == 'ok' else None
         path = os.getenv('CSV_FILES')
         path = path[:-1] if path[-1] == ';' else path
         path = path + "\\" if path[-1] != "\\" else path
-        cond_via_jcl = f'{ambiente}_cond_via_jcl.csv'.lower() # br_cond_via_jcl.csv inserir em br_out.csv
-        condex_in_file = f'{ambiente}_ex_in.csv'.lower()  # br_ex_in.csv - tmp file apagar
-        condex_out_file = f'{ambiente}_ex_out.csv'.lower()  # br_ex_out.csv - tmp file apagar
-        condin_file = f'{ambiente}_cond_in.csv'.lower()  # "br_cond_in.csv" - relatório vindo ctm
-        condout_file = f'{ambiente}_cond_out.csv'.lower()  # "br_cond_out.csv" - relatório vindo ctm
-        # condex_file = condex_file.lower()  # condicoes_externas.csv, obtido do arquivo do thiago ===>> automatizar criação zowe
-        previas_jcl = previas_jcl.lower()  # previas_jcl.csv obtido db2, manter esta base sempre
-        wrk_out_tmp_file = f'tmp_{wrk_out_file}'
-        # gera listas de condições externas era condex_file
-        condex_in_lst, condex_out_lst = create_condex_lists(path=path, csv_source=mf_frc_list,
-                                                            previas_jcl=previas_jcl, delimiter=delimiter)
-        # gera arquivos de condições externas já formatados a partir da respectiva lista de condições externas
-        create_condex_file_from_list(condex_in_lst, condex_in_file, path_=path)  # "br_in_ex.csv"
-        create_condex_file_from_list(condex_out_lst, condex_out_file, path_=path)  # "br_out_ex.csv"
-        # combina arquivos de condições internas e externas, gerando arquivo de trabalho do algoritmo
-        combine_condin_condex_files([condin_file, condex_in_file], wrk_in_file, path_=path)  # wrk = br_in.csv
-        combine_condin_condex_files([condout_file, condex_out_file], wrk_out_tmp_file, path_=path)  # wrk = tmp_br_out.csv
-        combine_condin_condex_files([wrk_out_tmp_file, cond_via_jcl], wrk_out_file, path_=path,
-                                    file_nb=0)  # wrk = br_out.csv apaga tmp_br_out.csv wrk_out_tmp_file primeiro
-        return 'Arquivos gerados com sucesso'
+        csv_condicoes_jcl = f'{ambiente}_cond_via_jcl.csv'.lower()  # obtida por query
+        csv_forcejcl_entrada = f'{ambiente}_frc_in.csv'.lower()
+        csv_forcejcl_saida = f'{ambiente}_frc_out.csv'.lower()
+        csv_cond_entrada_ctm = f'{ambiente}_cond_in.csv'.lower()
+        csv_cond_saida_ctm = f'{ambiente}_cond_out.csv'.lower()
+        arq_previas_jcl = arq_previas_jcl.lower()
+
+        # gera arquivo de condições via jcl
+        cria_csv_cond_jcl(path=path, filename=csv_condicoes_jcl, lista=lista_arq_force_jcl, mode="w")
+
+        # gera listas de force via jcl
+        lista_frc_jcl_entrada, lista_frc_jcl_saida = cria_lista_frc_jcl(path=path, csv_source=lista_arq_force_jcl,
+                                                                        previas_jcl=arq_previas_jcl,
+                                                                        delimiter=delimiter)
+
+        # gera csv de force via jcl
+        cria_csv_frc_jcl(lista_frc_jcl_entrada, csv_forcejcl_entrada, path_=path, mode="w")
+        cria_csv_frc_jcl(lista_frc_jcl_saida, csv_forcejcl_saida, path_=path, mode="w")
+
+        # combina arquivos de condições do ctm e via jcl, gerando arquivo de trabalho do algoritmo
+        combina_csvs_condicoes_ctm_e_force_jcl([csv_cond_entrada_ctm, csv_forcejcl_entrada],
+                                               csv_cond_entrada, path_=path)
+        combina_csvs_condicoes_ctm_e_force_jcl([csv_cond_saida_ctm, csv_forcejcl_saida],
+                                               csv_tmp_cond_saida, path_=path)
+        combina_csvs_condicoes_ctm_e_force_jcl([csv_tmp_cond_saida, csv_condicoes_jcl],
+                                               csv_cond_saida, path_=path, file_nb=0)
+        print(lista_arq_cnd_jcl)
+        return f'Arquivos {csv_cond_entrada} e {csv_cond_saida} gerados com sucesso'
     except FileNotFoundError or FileExistsError:
         return 'Algum arquivo está faltando para gerar os arquivos base'
+
+
+@app.get('/api/run/build_added_conds_by_jcl_csv')
+def build_added_conds_by_jcl_csv(amb):
+    ambiente = amb.upper()
+    inicio = time.time()
+    dbcon = DbConnect(ambiente)
+    conn = dbcon.connect_db2()
+    if conn:
+        sql = dbcon.get_prepared_conditions_sql()
+        cur = dbcon.get_db_curs(conn, sql)
+        registros = dbcon.get_curs_records(cur)
+        complex_list2csv(os.getenv('CSV_FILES'), f'{amb}_cond_via_jcl.csv', registros,
+                         get_added_cond_via_jcl_line, 1, 2, mode='w')
+        fim = time.time()
+        t_gasto = fim - inicio
+    else:
+        return 'Não foi possível conectar ao banco de dados de condições via jcl'
+    return f"Gerado arquivo csv com {len(registros) * 1000} registros de condições via jcl com sucesso em " \
+           f"{t_gasto / 60: .2f} minutos!"
