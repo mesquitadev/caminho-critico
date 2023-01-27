@@ -163,11 +163,6 @@ def is_path_file_exists(path_plus_file):
     return os.path.isfile(path_plus_file)
 
 
-def build_added_conds_by_jcl_file(conds_list: list):
-    # here
-    pass
-
-
 def combina_csvs_condicoes_ctm_e_force_jcl(input_files, output_file, path_, file_nb=1):
     input_files = [f'{path_}{arq}' for arq in input_files]
     output_file = f'{path_}{output_file}'
