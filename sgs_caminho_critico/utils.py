@@ -92,9 +92,20 @@ def list2csv(path, filename, lista_, mode='a+'):
             f.writelines(content)
 
 
-def complex_list2csv(path, filename, lista_, func, begin, end, mode='a+'):
+def tuple_list2csv(path, filename, lista_, mode='a+'):
+    with open(f'{path}\\{filename}', mode) as f:
+        end_line = lista_[0][-1]
+        for content in lista_[0]:
+            it = [remove_trailing_spaces(elm, 'r') for elm in [*content]]
+            it = f'{",".join(it)}\n' if content != end_line else f'{",".join(it)}'
+            f.writelines(it)
+
+
+def complex_list2csv(path, filename, lista_, func, begin, end, mode='a+', header=False, header_content='previa,jcl'):
     with open(f'{path}\\{filename}', mode) as f:
         end_line = lista_[-1]
+        if header:
+            f.writelines(header_content)
         for content in lista_:
             treated_content = func(content, begin, end)
             treated_content = f'{treated_content}' if treated_content != end_line else treated_content
@@ -108,6 +119,18 @@ def get_added_cond_via_jcl_line(list_: list, begin: int, end: int) -> str:
         it[0] = remove_trailing_spaces(it[0], 'r')
         it[1] = remove_trailing_spaces(it[1], 'r')
         retorno += f"{','.join(it)},ODAT,+,GRUPO\n"
+    return retorno
+
+
+def get_previas_jcl(list_: list, begin: int, end: int) -> str:
+    retorno = ""
+    for item in list_:
+        it = list(item[begin:end + 1])
+        it[0] = remove_trailing_spaces(it[0], 'r')
+        if len(it[0]) < 7:
+            continue
+        it[1] = remove_trailing_spaces(it[1], 'r')
+        retorno += f"{','.join(it)}\n"
     return retorno
 
 
@@ -130,11 +153,15 @@ def cria_csv_cond_jcl(path, filename, lista, mode):
 
 
 def csv2dict(path, filename, key_):
-    filename = f'{path}\\{filename}'
+    # filename = f'{path}\\{filename}'
+    path += '\\' if path[-1] != '\\' else ''
+    if not is_file_exists(path, filename):  # or not is_file_exists(path, csv_source):
+        raise FileNotFoundError
     d = {}
-    file = open(filename)
-    for i in csv.DictReader(file):
-        d[dict(i)[key_]] = dict(i)
+    with open(f'{path}{filename}') as file:
+        # file = open(filename)
+        for i in csv.DictReader(file):
+            d[dict(i)[key_]] = dict(i)
     return d
 
 
@@ -146,13 +173,13 @@ def get_no_duplicates_list(lista):
     return sorted(set(lista))
 
 
-def remove_trailing_spaces(string: str, direction: str):
+def remove_trailing_spaces(string: str, direction: str) -> str:
     if direction == 'r':
-        return string.rstrip(" ")
+        return string.rstrip()
     elif direction == 'l':
-        return string.lstrip(" ")
+        return string.lstrip()
     else:
-        return string.lstrip(" ").rstrip(" ")
+        return string.lstrip().rstrip()
 
 
 def cria_csv_frc_jcl(lista_, nome_, path_, mode="w"):
@@ -192,16 +219,12 @@ def combina_csvs_condicoes_ctm_e_force_jcl(input_files, output_file, path_, file
         os.remove(input_files[file_nb])
 
 
-def cria_lista_frc_jcl(path: str, csv_source: str, previas_jcl: str,
-                       delimiter: str = ";"):
+def create_forcejcl_dict(csv_source: str, prev_jcl_base: dict, delimiter: str = ";"):
     # file_name = f'{path}{csv_source}'
-    if not is_file_exists(path, previas_jcl):  # or not is_file_exists(path, csv_source):
-        raise FileNotFoundError
-
     in_ = []
     out_ = []
 
-    prev_jcl_base = csv2dict(path=path, filename=previas_jcl, key_="previa")
+    # prev_jcl_base = csv2dict(path=path, filename=previas_jcl, key_="previa")
 
     # montagem das condições externas no padrão das internas
     # with open(file_name, 'r', encoding="utf-8") as file:
@@ -268,15 +291,6 @@ def remove_files_by_pattern(dir_path, pattern, file_new):
                     print("Error while deleting file : ", os.path.join(parent_dir, filename))
                     list_of_files_with_error.append(os.path.join(parent_dir, filename))
     return list_of_files_with_error
-
-
-# def remove_file_pattern(file_pattern):
-#     file_list = glob.glob(file_pattern)
-#     for file_path in file_list:
-#         try:
-#             os.remove(file_path)
-#         except OSError:
-#             print(f"Erro ao excluir arquivo {file_path}")
 
 
 def is_char_a2z(character):
@@ -571,3 +585,40 @@ def read_file(file_name):  # dialect=csv.excel, **kwargs
     with open(file_name, 'r') as f:  # ,  encoding="utf-8"
         reader = csv.reader(f)
     return [row for row in reader if row is not None]
+
+
+def create_force_cond_via_fts_lists(list_fts: list, previas_dict: dict, fts_dataset: str):
+    """
+        cria lista de condições de entrada e saída de acordo com lista
+        de force ou condição via chegada de arquivo no fts do dataset lido pelo zowe
+    """
+    tgt_plex = fts_dataset[0:2].upper()
+    data_in = []
+    data_out = []
+    for elm in list_fts:
+        elm = elm.split(';')
+        # a sigla ftr possui jobname dinamico e há muitos casos
+        # em que tais jobnames não estão presentes na tabela de prévias
+        # outro caso é que um jobname pode estar ligado a mais de um jcl
+        # dependendo da ocasião em que o job é executado, por isso os
+        # que não forem encontrados serão ignorados, isso poderá afetar
+        # o mapa até encontrarmos alguma solução plausível
+        if not is_dict_key(previas_dict, remove_trailing_spaces(elm[1], 'r')) \
+                or not is_dict_key(previas_dict, remove_trailing_spaces(elm[4], 'r')):
+            continue
+
+        job_gerador = previas_dict[remove_trailing_spaces(elm[1], 'r')]['jcl']
+        plex_gerador = remove_trailing_spaces(elm[2], 'r').upper()
+        arq_recbdo = remove_trailing_spaces(elm[0], 'r').upper()
+        rotina_forcada = remove_trailing_spaces(elm[4], 'r').upper()
+
+        if remove_trailing_spaces(elm[3], 'r') == 'COND':
+            condicao_fts = remove_trailing_spaces(elm[8], 'r').upper()
+            data_out.append(f"{job_gerador}-{plex_gerador},{condicao_fts},+,GRUPO\n")
+        else:
+            data_out.append(f"{job_gerador}-{plex_gerador},ARQ-{arq_recbdo}-{plex_gerador}-FRC-{rotina_forcada}"
+                            f"-{tgt_plex},+,GRUPO\n")
+
+            data_in.append(f"{rotina_forcada}-{tgt_plex},ARQ-{arq_recbdo}-{plex_gerador}-FRC-{rotina_forcada}"
+                           f"-{tgt_plex},ODAT,,,GRUPO\n")
+    return data_in, data_out

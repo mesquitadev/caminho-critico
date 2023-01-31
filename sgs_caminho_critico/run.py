@@ -1,6 +1,7 @@
 import os
 import re
 import time
+from enum import Enum
 
 import aiofiles
 import networkx as nx
@@ -14,11 +15,24 @@ from descendentes import monta_grafo
 from pzowe import Pzowe
 from utils import jsonify_nodes_edges, read_csv_file, save_graph_to_file, get_file_name, \
     is_file_exists, get_json_content, remove_files_by_pattern, remove_empty_elements, \
-    jsonify_parent_son, cria_lista_frc_jcl, cria_csv_frc_jcl, combina_csvs_condicoes_ctm_e_force_jcl, \
+    jsonify_parent_son, create_forcejcl_dict, cria_csv_frc_jcl, combina_csvs_condicoes_ctm_e_force_jcl, \
     download_file_by_url, cria_csv_cond_jcl, get_condjcl_file_name, complex_list2csv, \
-    get_added_cond_via_jcl_line
+    get_added_cond_via_jcl_line, get_previas_jcl, create_force_cond_via_fts_lists, csv2dict
 
 app = FastAPI()
+
+
+class Arquivo(Enum):
+    PREVIAS_JCL = 'previas_jcl.csv'
+    TRAB_CONDS_ENTRADA = '_in.csv'
+    TRAB_CONDS_SAIDA = '_out.csv'
+    CONDS_VIA_JCL = '_cond_via_jcl.csv'
+    FORCE_JCL_ENTRADA = '_frc_in.csv'
+    FORCE_JCL_SAIDA = '_frc_out.csv'
+    CONDS_ENTRADA_CTM = '_cond_in.csv'
+    CONDS_SAIDA_CTM = '_cond_out.csv'
+    CONDS_FRC_FTS_IN = '_fts_in.csv'
+    CONDS_FRC_FTS_OUT = '_fts_out.csv'
 
 
 @app.post("/api/run/uploadfiles/")
@@ -149,50 +163,59 @@ async def get_condition_ctm_report(report, ambiente):
         return 'No report generated!'
 
 
-@app.post('/api/run/combina_condicoes')
-def combina_condicoes_ctm_com_externas(arq_previas_jcl, ambiente, delimiter=';'):
+@app.post('/api/run/combina_condicoes_ctm_condicoes_via_jcl')
+def combina_condicoes_ctm_condicoes_via_jcl(ambiente, delimiter=';'):
     try:
         pz = Pzowe()
         amb = ambiente.upper()
+        force_cnd_fts_file = None
         if pz.is_logged(amb):
             hlq = pz.hlq[amb][0]
-            # le datasets force jcl e condicoes via jcl
             frc_part_file = os.getenv('FRC_DTSET')
             cond_part_file = os.getenv('FRCFTS_DTSET')
             frc_file = f'{hlq}.{frc_part_file}'
             force_cnd_fts_file = get_condjcl_file_name(hlq=hlq, cnd_part_file=cond_part_file)
+            # le datasets force via jcl e condicoes via jcl utilizando zowe
             lista_arq_force_jcl = pz.get_dataset_contents(frc_file)
-            lista_arq_cnd_jcl = pz.get_dataset_contents(force_cnd_fts_file)
+            lst_arq_fts_force_cond_jcl = pz.get_dataset_contents(force_cnd_fts_file)
         else:
             lista_arq_force_jcl = None
-            lista_arq_cnd_jcl = None
+            lst_arq_fts_force_cond_jcl = None
 
         # arquivos úteis
-        csv_cond_entrada = f'{ambiente}_in.csv'
-        csv_cond_saida = f'{ambiente}_out.csv'
+        csv_cond_entrada = f'{ambiente}{Arquivo.TRAB_CONDS_ENTRADA.value}'
+        csv_cond_saida = f'{ambiente}{Arquivo.TRAB_CONDS_SAIDA.value}'
         csv_tmp_cond_saida = f'tmp_{csv_cond_saida}'
         lista_arq_force_jcl = lista_arq_force_jcl[1].split('\n') \
             if lista_arq_force_jcl is not None and lista_arq_force_jcl[0] == 'ok' else None
-        lista_arq_cnd_jcl = lista_arq_cnd_jcl[1].split('\n') \
-            if lista_arq_cnd_jcl is not None and lista_arq_cnd_jcl[0] == 'ok' else None
+        lst_arq_fts_force_cond_jcl = lst_arq_fts_force_cond_jcl[1].split('\n')[0:-1] \
+            if lst_arq_fts_force_cond_jcl is not None and lst_arq_fts_force_cond_jcl[0] == 'ok' else None
         path = os.getenv('CSV_FILES')
         path = path[:-1] if path[-1] == ';' else path
         path = path + "\\" if path[-1] != "\\" else path
-        csv_condicoes_jcl = f'{ambiente}_cond_via_jcl.csv'.lower()  # obtida por query
-        csv_forcejcl_entrada = f'{ambiente}_frc_in.csv'.lower()
-        csv_forcejcl_saida = f'{ambiente}_frc_out.csv'.lower()
-        csv_cond_entrada_ctm = f'{ambiente}_cond_in.csv'.lower()
-        csv_cond_saida_ctm = f'{ambiente}_cond_out.csv'.lower()
-        arq_previas_jcl = arq_previas_jcl.lower()
+        csv_condicoes_jcl = f'{ambiente}{Arquivo.CONDS_VIA_JCL.value}'.lower()  # obtida por query
+        csv_forcejcl_entrada = f'{ambiente}{Arquivo.FORCE_JCL_ENTRADA.value}'.lower()
+        csv_forcejcl_saida = f'{ambiente}{Arquivo.FORCE_JCL_SAIDA.value}'.lower()
+        csv_cond_entrada_ctm = f'{ambiente}{Arquivo.CONDS_ENTRADA_CTM.value}'.lower()
+        csv_cond_saida_ctm = f'{ambiente}{Arquivo.CONDS_SAIDA_CTM.value}'.lower()
+        arq_previas_jcl = Arquivo.PREVIAS_JCL.value.lower()
+        arq_fts_in = Arquivo.CONDS_FRC_FTS_IN
+        arq_fts_out = Arquivo.CONDS_FRC_FTS_OUT
 
         # gera arquivo de condições via jcl
         cria_csv_cond_jcl(path=path, filename=csv_condicoes_jcl, lista=lista_arq_force_jcl, mode="w")
 
+        # dicionário de prévias onde a chave é a prévia
+        prev_jcl_base = csv2dict(path=path, filename=arq_previas_jcl, key_="previa")
         # gera listas de force via jcl
-        lista_frc_jcl_entrada, lista_frc_jcl_saida = cria_lista_frc_jcl(path=path, csv_source=lista_arq_force_jcl,
-                                                                        previas_jcl=arq_previas_jcl,
-                                                                        delimiter=delimiter)
-
+        lista_frc_jcl_entrada, lista_frc_jcl_saida = create_forcejcl_dict(csv_source=lista_arq_force_jcl,
+                                                                          prev_jcl_base=prev_jcl_base,
+                                                                          delimiter=delimiter)
+        # gera listas de force e cond via fts
+        if lst_arq_fts_force_cond_jcl:
+            fts_in, fts_out = create_force_cond_via_fts_lists(list_fts=lst_arq_fts_force_cond_jcl,
+                                                              previas_dict=prev_jcl_base,
+                                                              fts_dataset=force_cnd_fts_file)
         # gera csv de force via jcl
         cria_csv_frc_jcl(lista_frc_jcl_entrada, csv_forcejcl_entrada, path_=path, mode="w")
         cria_csv_frc_jcl(lista_frc_jcl_saida, csv_forcejcl_saida, path_=path, mode="w")
@@ -204,7 +227,6 @@ def combina_condicoes_ctm_com_externas(arq_previas_jcl, ambiente, delimiter=';')
                                                csv_tmp_cond_saida, path_=path)
         combina_csvs_condicoes_ctm_e_force_jcl([csv_tmp_cond_saida, csv_condicoes_jcl],
                                                csv_cond_saida, path_=path, file_nb=0)
-        print(lista_arq_cnd_jcl)
         return f'Arquivos {csv_cond_entrada} e {csv_cond_saida} gerados com sucesso'
     except FileNotFoundError or FileExistsError:
         return 'Algum arquivo está faltando para gerar os arquivos base'
@@ -227,4 +249,24 @@ def build_added_conds_by_jcl_csv(amb):
     else:
         return 'Não foi possível conectar ao banco de dados de condições via jcl'
     return f"Gerado arquivo csv com {len(registros) * 1000} registros de condições via jcl com sucesso em " \
+           f"{t_gasto / 60: .2f} minutos!"
+
+
+@app.get('/api/run/build_previas_jcl_csv')
+def build_previas_jcl_csv(amb):
+    ambiente = amb.upper()
+    inicio = time.time()
+    dbcon = DbConnect(ambiente)
+    conn = dbcon.connect_db2()
+    if conn:
+        sql = dbcon.get_prepared_previas_sql()
+        cur = dbcon.get_db_curs(conn, sql)
+        registros = dbcon.get_curs_records(cur)
+        complex_list2csv(os.getenv('CSV_FILES'), 'previas_jcl.csv', registros, get_previas_jcl, 0, 2, mode='w',
+                         header=True, header_content='previas,jcl')
+        fim = time.time()
+        t_gasto = fim - inicio
+    else:
+        return 'Não foi possível conectar ao banco de dados de condições via jcl'
+    return f"Gerado arquivo csv com {len(registros) * 1000} registros de prévias com sucesso em " \
            f"{t_gasto / 60: .2f} minutos!"

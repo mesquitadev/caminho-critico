@@ -1,21 +1,13 @@
 from __future__ import generators
+
 import os
-from datetime import datetime, timedelta, date
+from datetime import datetime, date
 
 import ibm_db_dbi as db
 import mysql.connector
 from mysql.connector import Error
 
 from utils import get_date_minus_added_time
-
-'''
-select n.name as origem , m.name as destino
-from edges e
-left outer join nodes n
-on e.source = n.id
-left outer join nodes m
-on e.target = m.id
-'''
 
 
 class DbConnect:
@@ -33,6 +25,15 @@ class DbConnect:
         self.database = self.location[self.amb]
         self.hostname = self.hosts[self.amb][0]
         self.port = self.hosts[self.amb][1]
+        self.lib = {'BR': 'BRCTMP1.JCL.PCP',
+                    'B2': 'B2CTMP1.JCL.PCP',
+                    'B3': 'B3CTMP1.JCL.PCP',
+                    'HM': 'HMCTMP1.JCL.PCP'}
+        self.ctm_user = {'DS': {'user': 'DST', 'amb': 'DSA'},
+                         'HM': {'user': 'BRH', 'amb': 'HOM'},
+                         'BR': {'user': 'BRP', 'amb': 'BSB'},
+                         'B2': {'user': 'B2P', 'amb': 'BS2'},
+                         'B3': {'user': 'B3P', 'amb': 'BS3'}}
 
     def connect_db2(self):
         try:
@@ -152,30 +153,21 @@ class DbConnect:
             cur.close()
             conn.close()
 
-    def get_prepared_sql(self):
-        # jobs = get_distinct_elements(aqv)  # and NM_JOB in
-        lib = {'BR': 'BRCTMP1.JCL.PCP',
-               'B2': 'B2CTMP1.JCL.PCP',
-               'B3': 'B3CTMP1.JCL.PCP',
-               'HM': 'HMCTMP1.JCL.PCP'}
-        biblioteca = "'" + lib[self.amb] + "'"
-        de = datetime.now().strftime('%Y-%m-%d')
-        ateh = (datetime.now() + timedelta(days=4)).strftime('%Y-%m-%d')
-        sql = f"select distinct nm_job as previa, nm_mbr_job as jcl, ts_abn " \
+    def get_prepared_previas_sql(self):
+        # biblioteca = f"'{self.lib[self.amb]}'"  , cd_ctp
+        ateh = datetime.now().strftime('%Y-%m-%d')
+        de = get_date_minus_added_time(date.today(), 'Y', 1)
+        sql = f"select distinct nm_job as previa, nm_mbr_job as jcl  " \
               f"from {self.location[self.amb]}.DB2OPP.ABN " \
-              f"where cd_tip_job = 'JOB' and cd_ctp = '{self.amb}' " \
-              f"and NM_BBL_JOB = {biblioteca} " \
+              f"where cd_tip_job = 'JOB' " \
               f"and date(ts_abn) between '{de}' and '{ateh}' " \
               f"order by nm_job"
+        # f"and NM_BBL_JOB = {biblioteca} " \
+        # and cd_ctp = '{self.amb}' " \
         return sql
 
     def get_prepared_conditions_sql(self):
         ambiente = self.amb.upper()
-        ctm_user = {'DS': {'user': 'DST', 'amb': 'DSA'},
-                    'HM': {'user': 'BRH', 'amb': 'HOM'},
-                    'BR': {'user': 'BRP', 'amb': 'BSB'},
-                    'B2': {'user': 'B2P', 'amb': 'BS2'},
-                    'B3': {'user': 'B3P', 'amb': 'BS3'}}
         sql = f"""
                 select
                            distinct
@@ -187,8 +179,8 @@ class DbConnect:
                     DB2IIT.OPR_RLZD_CND  as a,
                     BDB2P04.DB2OPP.ABN as b
                 where
-                a.cd_usu_rsp_opr = '{ctm_user[ambiente]['user']}'
-                and a.nm_amb_prct = '{ctm_user[ambiente]['amb']}'
+                a.cd_usu_rsp_opr = '{self.ctm_user[ambiente]['user']}'
+                and a.nm_amb_prct = '{self.ctm_user[ambiente]['amb']}'
                 and b.cd_ctp = '{ambiente}'  -- varia com plex
                 and b.NM_BBL_JOB = '{ambiente}CTMP1.JCL.PCP' -- varia com plex
                 and b.nm_mbr_job    <> 'CTMEDEL'
