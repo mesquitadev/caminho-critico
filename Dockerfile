@@ -6,7 +6,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM docker.binarios.intranet.com.br/python:3.10 AS pre-sgs-container
+FROM docker.binarios.intranet.com.br/python:3.11 AS pre-sgs-container
 
 COPY pip.conf /etc/pip.conf
 COPY requirements.txt /tmp/requirements.txt
@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir --upgrade --prefix /usr/local pip==22.0.4 setupto
     pip install --no-cache-dir -r /tmp/requirements.txt
 
 
-FROM atf.intranet.bb.com.br:5001/python:3.10
+FROM atf.intranet.bb.com.br:5001/python:3.11
 
 ARG build_date
 ARG vcs_ref
