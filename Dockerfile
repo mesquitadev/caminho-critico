@@ -34,7 +34,6 @@ RUN rm -rf dist/*.whl
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN pip3 install --no-cache-dir dist/sgs_caminho_critico*
 
-
 FROM docker.binarios.intranet.bb.com.br/python:3.11
 ARG build_date
 ARG vcs_ref
