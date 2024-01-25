@@ -1,5 +1,5 @@
-from graph_generator import build_edges_predecessors
-from utils import remove_list_duplicate
+from sgs_caminho_critico.graph_generator import build_edges_predecessors
+from sgs_caminho_critico.utils import remove_list_duplicate
 
 
 def get_item_by_node_ant(node_label, list_name, i, tipo='+'):

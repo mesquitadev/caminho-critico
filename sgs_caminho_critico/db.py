@@ -7,7 +7,7 @@ import ibm_db_dbi as db
 import mysql.connector
 from mysql.connector import Error
 
-from utils import get_date_minus_added_time
+from sgs_caminho_critico.utils import get_date_minus_added_time
 
 
 class DbConnect:

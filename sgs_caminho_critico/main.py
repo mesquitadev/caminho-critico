@@ -1,9 +1,9 @@
 import networkx as nx
 
-from antecessores import monta_grafo_ant
-from descendentes import monta_grafo
-from graph_generator import draw_graph
-from utils import is_char_a2z, jsonify_nodes_edges, read_csv_file
+from sgs_caminho_critico.descendentes import monta_grafo
+from sgs_caminho_critico.antecessores import monta_grafo_ant
+from sgs_caminho_critico.utils import is_char_a2z, jsonify_nodes_edges, read_csv_file
+from sgs_caminho_critico.graph_generator import draw_graph
 
 # rodadas de sucesso:
 # ACLD137,ACLD200,ACLDH07,ACLD250,ACLD775,DTII010,ACLD847A

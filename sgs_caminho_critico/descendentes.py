@@ -1,5 +1,5 @@
-from graph_generator import build_edges
-from utils import remove_list_duplicate, is_char_a2z
+from sgs_caminho_critico.graph_generator import build_edges
+from sgs_caminho_critico.utils import remove_list_duplicate, is_char_a2z
 
 # all_edges = []
 # itens_entrada = []

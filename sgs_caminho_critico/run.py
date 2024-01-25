@@ -8,12 +8,12 @@ import networkx as nx
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import JSONResponse
 
-from antecessores import monta_grafo_antv2
-from ctm import Ctm, get_data_report
-from db import DbConnect
-from descendentes import monta_grafo
-from pzowe import Pzowe
-from utils import jsonify_nodes_edges, read_csv_file, save_graph_to_file, get_file_name, \
+from sgs_caminho_critico.antecessores import monta_grafo_antv2
+from sgs_caminho_critico.ctm import Ctm, get_data_report
+from sgs_caminho_critico.db import DbConnect
+from sgs_caminho_critico.descendentes import monta_grafo
+from sgs_caminho_critico.pzowe import Pzowe
+from sgs_caminho_critico.utils import jsonify_nodes_edges, read_csv_file, save_graph_to_file, get_file_name, \
     is_file_exists, get_json_content, remove_files_by_pattern, remove_empty_elements, \
     jsonify_parent_son, create_forcejcl_dict, cria_csv_frc_jcl, combina_csvs_condicoes_ctm_e_force_jcl, \
     download_file_by_url, cria_csv_cond_jcl, get_condjcl_file_name, complex_list2csv, \
@@ -199,8 +199,8 @@ def combina_condicoes_ctm_condicoes_via_jcl(ambiente, delimiter=';'):
         csv_cond_entrada_ctm = f'{ambiente}{Arquivo.CONDS_ENTRADA_CTM.value}'.lower()
         csv_cond_saida_ctm = f'{ambiente}{Arquivo.CONDS_SAIDA_CTM.value}'.lower()
         arq_previas_jcl = Arquivo.PREVIAS_JCL.value.lower()
-        arq_fts_in = Arquivo.CONDS_FRC_FTS_IN
-        arq_fts_out = Arquivo.CONDS_FRC_FTS_OUT
+        # arq_fts_in = Arquivo.CONDS_FRC_FTS_IN
+        # arq_fts_out = Arquivo.CONDS_FRC_FTS_OUT
 
         # gera arquivo de condições via jcl
         cria_csv_cond_jcl(path=path, filename=csv_condicoes_jcl, lista=lista_arq_force_jcl, mode="w")
