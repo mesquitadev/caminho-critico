@@ -78,7 +78,7 @@ RUN mkdir /csv && \
     apt-get install --no-install-recommends -y vim=2:8.2.2434-3+deb11u1 \
                        supervisor=4.2.2-2 \
                        iputils-ping=3:20210202-1 \
-                       telnet=0.17-42 \                    
+                       telnet=0.17-42 \                    \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
 
