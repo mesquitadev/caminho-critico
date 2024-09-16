@@ -34,9 +34,9 @@ class PostgresRepository:
             query = """
             select
             'stopwatch' as icon, '#377' as color, 'wait' as mainstat,
-            sa.idfr_sch as id, sa.nm_mbr as title, sa.sub_apl as subtitle, sa.pas_pai as detail__pasta, sa.nm_svdr as detail__amb 
-            from batch.sch_agdd sa 
-            where idfr_sch in %s
+            sa.idfr_sch as id, sa.nm_mbr as title, sa.sub_apl as subtitle,
+             sa.pas_pai as detail__pasta, sa.nm_svdr as detail__amb
+            from batch.sch_agdd sa where idfr_sch in %s
             """
             cursor.execute(query, (tuple(node_ids),))
             return cursor.fetchall()

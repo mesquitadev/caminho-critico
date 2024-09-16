@@ -1,4 +1,3 @@
-import json
 import threading
 import time
 import networkx as nx

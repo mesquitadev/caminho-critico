@@ -20,6 +20,7 @@ from sgs_caminho_critico.utils import jsonify_nodes_edges, read_csv_file, save_g
     get_added_cond_via_jcl_line, get_previas_jcl, create_force_cond_via_fts_lists, csv2dict
 
 from sgs_caminho_critico.controller.CaminhoCriticoController import caminhos_router
+
 app = FastAPI()
 
 
@@ -272,5 +273,6 @@ def build_previas_jcl_csv(amb):
         return 'Não foi possível conectar ao banco de dados de condições via jcl'
     return f"Gerado arquivo csv com {len(registros) * 1000} registros de prévias com sucesso em " \
            f"{t_gasto / 60: .2f} minutos!"
+
 
 app.include_router(caminhos_router, prefix="/api/caminhos", tags=["Graph"])

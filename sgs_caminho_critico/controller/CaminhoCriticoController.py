@@ -7,8 +7,6 @@ import psycopg2
 import json
 from psycopg2.extras import RealDictCursor
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
-from sgs_caminho_critico.service.CaminhoCriticoService import CaminhoCriticoService
 
 caminhos_router = APIRouter()
 
@@ -49,21 +47,24 @@ class PostgresRepository:
 
     def fetch_edges(self, node_ids):
         with self.connection.cursor(cursor_factory=RealDictCursor) as cursor:
-            query = """
-            select 
-            ROW_NUMBER() OVER ()  as id,
-            source as source,
-            target as target,
-            mainstat,
-            secondarystat
-            from
-            (select je.idfr_sch as source, je.idfr_job_exct as target, 'FORCE' as  mainstat, '' as secondarystat from batch.job_exct je 
-            union
-            select sccs.idfr_sch as source, scce.idfr_sch as target, 'COND' as mainstat, c.nm_cnd as secondarystat from batch.sch_crlc_cnd_said sccs inner join batch.sch_crlc_cnd_entd scce on sccs.idfr_cnd = scce.idfr_cnd
-            inner join batch.cnd c on sccs.idfr_cnd = c.idfr_cnd 
-            where sccs.cmdo_cnd = 'A' and scce.dt_cnd <> 'PREV') as res
-            where res.source IN %s and res.target IN %s
-            """
+            query = ("\n"
+                     "            select \n"
+                     "            ROW_NUMBER() OVER ()  as id,\n"
+                     "            source as source,\n"
+                     "            target as target,\n"
+                     "            mainstat,\n"
+                     "            secondarystat\n"
+                     "            from\n"
+                     "            (select je.idfr_sch as source, je.idfr_job_exct as target, 'FORCE'"
+                     " as  mainstat, '' as secondarystat from batch.job_exct je \n"
+                     "            union\n"
+                     "            select sccs.idfr_sch as source, scce.idfr_sch as target, 'COND'"
+                     " as mainstat, c.nm_cnd as secondarystat from batch.sch_crlc_cnd_said sccs "
+                     "inner join batch.sch_crlc_cnd_entd scce on sccs.idfr_cnd = scce.idfr_cnd\n"
+                     "            inner join batch.cnd c on sccs.idfr_cnd = c.idfr_cnd \n"
+                     "            where sccs.cmdo_cnd = 'A' and scce.dt_cnd <> 'PREV') as res\n"
+                     "            where res.source IN %s and res.target IN %s\n"
+                     "            ")
             cursor.execute(query, (tuple(node_ids), tuple(node_ids)))
             return cursor.fetchall()
 
