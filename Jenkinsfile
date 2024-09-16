@@ -1,6 +1,8 @@
 @Library(['aic-jenkins-sharedlib']) _
 
 pythonBuildPipeline {
+    versaoPython                    = 3.11
+    habilitarValidacaoPreReq        = true // habilita a validação dos pré-requisitos
     habilitarValidacaoEstatica      = true // habilita a validação estática do código fonte
     habilitarValidacaoSeguranca     = false // habilita a validação de segurança do código fonte
     habilitarConstrucao             = true // habilita a construção da aplicação

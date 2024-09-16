@@ -19,6 +19,7 @@ from sgs_caminho_critico.utils import jsonify_nodes_edges, read_csv_file, save_g
     download_file_by_url, cria_csv_cond_jcl, get_condjcl_file_name, complex_list2csv, \
     get_added_cond_via_jcl_line, get_previas_jcl, create_force_cond_via_fts_lists, csv2dict
 
+from sgs_caminho_critico.controller.CaminhoCriticoController import caminhos_router
 app = FastAPI()
 
 
@@ -90,6 +91,7 @@ def fetch_graph_data(rotina=None, grupo=None, tipo=1, ambiente='br'):
     arq_out = ambiente + '_out.csv' if ambiente else None
 
     entrada = read_csv_file(f'{path}{arq_in}', ',') if arq_in else None
+
     saida = read_csv_file(f'{path}{arq_out}', ',') if arq_out else None
     if entrada is None or saida is None:
         print('Ambiente não fornecido')
@@ -270,3 +272,5 @@ def build_previas_jcl_csv(amb):
         return 'Não foi possível conectar ao banco de dados de condições via jcl'
     return f"Gerado arquivo csv com {len(registros) * 1000} registros de prévias com sucesso em " \
            f"{t_gasto / 60: .2f} minutos!"
+
+app.include_router(caminhos_router, prefix="/api/caminhos", tags=["Graph"])

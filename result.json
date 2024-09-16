@@ -1,0 +1,262 @@
+{
+    "nodes": [
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 67958,
+            "title": "VIPD001A                                    ",
+            "subtitle": "VIP-001             ",
+            "detail__pasta": "VIP                 ",
+            "detail__amb": "SYSPLEX1            "
+        },
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 68062,
+            "title": "VIPD050                                     ",
+            "subtitle": "#VIP-001            ",
+            "detail__pasta": "VIP                 ",
+            "detail__amb": "SYSPLEX1            "
+        },
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 68067,
+            "title": "VIPD055                                     ",
+            "subtitle": "VIP-001             ",
+            "detail__pasta": "VIP                 ",
+            "detail__amb": "SYSPLEX1            "
+        },
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 68401,
+            "title": "VIPD252                                     ",
+            "subtitle": "#VIP-001            ",
+            "detail__pasta": "VIP                 ",
+            "detail__amb": "SYSPLEX1            "
+        },
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 68413,
+            "title": "VIPD260                                     ",
+            "subtitle": "#VIP-001            ",
+            "detail__pasta": "VIP                 ",
+            "detail__amb": "SYSPLEX1            "
+        },
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 68414,
+            "title": "VIPD261                                     ",
+            "subtitle": "VIP-001             ",
+            "detail__pasta": "VIP                 ",
+            "detail__amb": "SYSPLEX1            "
+        },
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 69187,
+            "title": "VIPD577                                     ",
+            "subtitle": "VIP-001             ",
+            "detail__pasta": "VIP                 ",
+            "detail__amb": "SYSPLEX1            "
+        },
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 69270,
+            "title": "VIPD616                                     ",
+            "subtitle": "VIP-001             ",
+            "detail__pasta": "VIP2                ",
+            "detail__amb": "SYSPLEX1            "
+        },
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 69271,
+            "title": "VIPD616A                                    ",
+            "subtitle": "VIP-001             ",
+            "detail__pasta": "VIP2                ",
+            "detail__amb": "SYSPLEX1            "
+        },
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 69884,
+            "title": "VIPD922                                     ",
+            "subtitle": "#VIP-001            ",
+            "detail__pasta": "VIP2                ",
+            "detail__amb": "SYSPLEX1            "
+        },
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 70445,
+            "title": "VIPE262                                     ",
+            "subtitle": "VIP-001             ",
+            "detail__pasta": "VIP                 ",
+            "detail__amb": "SYSPLEX1            "
+        },
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 70446,
+            "title": "VIPE263                                     ",
+            "subtitle": "VIP-001             ",
+            "detail__pasta": "VIP                 ",
+            "detail__amb": "SYSPLEX1            "
+        },
+        {
+            "icon": "stopwatch",
+            "color": "#377",
+            "mainstat": "wait",
+            "id": 70447,
+            "title": "VIPE263A                                    ",
+            "subtitle": "VIP-001             ",
+            "detail__pasta": "VIP                 ",
+            "detail__amb": "SYSPLEX1            "
+        }
+    ],
+    "edges": [
+        {
+            "id": 1,
+            "source": 67958,
+            "target": 68062,
+            "mainstat": "COND",
+            "secondarystat": "VIPD001A-VIPD050"
+        },
+        {
+            "id": 2,
+            "source": 67958,
+            "target": 68414,
+            "mainstat": "COND",
+            "secondarystat": "VIPD001A-VIPD261"
+        },
+        {
+            "id": 3,
+            "source": 68062,
+            "target": 68067,
+            "mainstat": "COND",
+            "secondarystat": "VIPD050-VIPD055"
+        },
+        {
+            "id": 4,
+            "source": 68067,
+            "target": 68401,
+            "mainstat": "COND",
+            "secondarystat": "VIPD055-VIPD252"
+        },
+        {
+            "id": 5,
+            "source": 68067,
+            "target": 68413,
+            "mainstat": "COND",
+            "secondarystat": "VIPD055-VIPD260"
+        },
+        {
+            "id": 6,
+            "source": 68067,
+            "target": 69187,
+            "mainstat": "COND",
+            "secondarystat": "VIPD055-VIPD577"
+        },
+        {
+            "id": 7,
+            "source": 68401,
+            "target": 69884,
+            "mainstat": "COND",
+            "secondarystat": "VIPD252-VIPD922"
+        },
+        {
+            "id": 8,
+            "source": 68413,
+            "target": 69884,
+            "mainstat": "COND",
+            "secondarystat": "VIPD260-VIPD922"
+        },
+        {
+            "id": 9,
+            "source": 68414,
+            "target": 69271,
+            "mainstat": "COND",
+            "secondarystat": "VIPD261-VIPD616A"
+        },
+        {
+            "id": 10,
+            "source": 68414,
+            "target": 69884,
+            "mainstat": "COND",
+            "secondarystat": "VIPD261-VIPD922"
+        },
+        {
+            "id": 11,
+            "source": 68414,
+            "target": 70445,
+            "mainstat": "COND",
+            "secondarystat": "VIPD261-VIPE262"
+        },
+        {
+            "id": 12,
+            "source": 68414,
+            "target": 70447,
+            "mainstat": "COND",
+            "secondarystat": "VIPD261-VIPE263"
+        },
+        {
+            "id": 13,
+            "source": 69187,
+            "target": 69884,
+            "mainstat": "COND",
+            "secondarystat": "VIPD577-VIPD922"
+        },
+        {
+            "id": 14,
+            "source": 69270,
+            "target": 69884,
+            "mainstat": "COND",
+            "secondarystat": "VIPD616-VIPD922"
+        },
+        {
+            "id": 15,
+            "source": 69271,
+            "target": 69270,
+            "mainstat": "COND",
+            "secondarystat": "VIPD616A-VIPD616"
+        },
+        {
+            "id": 16,
+            "source": 70445,
+            "target": 69884,
+            "mainstat": "COND",
+            "secondarystat": "VIPE262-VIPD922"
+        },
+        {
+            "id": 17,
+            "source": 70446,
+            "target": 69884,
+            "mainstat": "COND",
+            "secondarystat": "VIPE263-VIPD922"
+        },
+        {
+            "id": 18,
+            "source": 70447,
+            "target": 70446,
+            "mainstat": "COND",
+            "secondarystat": "VIPE263A-VIPD263"
+        }
+    ]
+}

@@ -10,3 +10,11 @@ python-multipart~=0.0.5
 ibm-db==3.1.2
 urllib3~=1.26.12
 python-dateutil~=2.8.2
+pip~=23.2.1
+wheel~=0.41.2
+pillow~=10.4.0
+packaging~=24.1
+pyparsing~=3.1.2
+typing_extensions~=4.12.2
+SQLAlchemy~=2.0.34
+psycopg2~=2.9.9
