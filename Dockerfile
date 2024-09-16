@@ -13,7 +13,9 @@ COPY requirements.txt /tmp/requirements.txt
 COPY bundle.crt /etc/ssl/certs/bb.bundle.crt
 COPY skip-ssl-check /etc/apt/apt.conf.d/skip-ssl-check
 
-RUN pip install --no-cache-dir --upgrade --prefix /usr/local pip==22.0.4 setuptools==60.10.0 wheel==0.37.1 && \
+RUN apt-get update && \
+    apt-get install -y python3-dev && \
+    pip install --no-cache-dir --upgrade --prefix /usr/local pip==22.0.4 setuptools==60.10.0 wheel==0.37.1 && \
     pip install --no-cache-dir -r /tmp/requirements.txt
 
 FROM pre-sgs-container as pythonBuilder
