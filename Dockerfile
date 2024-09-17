@@ -26,7 +26,7 @@ RUN apt-get update && \
 
 FROM pre-sgs-container as pythonBuilder
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
-RUN pip3 --no-cache-dir install "fastapi[all]"==0.94.1
+RUN pip3 --no-cache-dir install fastapi==0.94.1
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN pip3 --no-cache-dir install cx_Oracle==8.3.0
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
