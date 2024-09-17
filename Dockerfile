@@ -12,6 +12,9 @@ COPY pip.conf /etc/pip.conf
 COPY requirements.txt /tmp/requirements.txt
 COPY bundle.crt /etc/ssl/certs/bb.bundle.crt
 COPY skip-ssl-check /etc/apt/apt.conf.d/skip-ssl-check
+RUN mkdir /app
+WORKDIR /app
+COPY . .
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
