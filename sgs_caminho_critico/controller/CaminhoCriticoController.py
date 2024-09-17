@@ -7,6 +7,7 @@ import psycopg2
 import json
 from psycopg2.extras import RealDictCursor
 from fastapi import APIRouter
+import logging
 
 caminhos_router = APIRouter()
 
@@ -67,6 +68,34 @@ class PostgresRepository:
                      "            ")
             cursor.execute(query, (tuple(node_ids), tuple(node_ids)))
             return cursor.fetchall()
+
+    def fetch_and_save_records_to_csv(self, csv_file_path):
+        # Configurar o log
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+
+        # Verificar se o arquivo CSV existe e apagar se necessário
+        if os.path.exists(csv_file_path):
+            os.remove(csv_file_path)
+            logging.info(f'Arquivo {csv_file_path} apagado antes de atualizar.')
+
+        with self.connection.cursor(cursor_factory=RealDictCursor) as cursor:
+            query = """
+            select je.idfr_sch, je.idfr_job_exct from batch.job_exct je
+            union
+            select sccs.idfr_sch, scce.idfr_sch from batch.sch_crlc_cnd_said sccs
+            inner join batch.sch_crlc_cnd_entd scce on sccs.idfr_cnd = scce.idfr_cnd
+            inner join batch.cnd c on sccs.idfr_cnd = c.idfr_cnd
+            where sccs.cmdo_cnd = 'A'
+            """
+            cursor.execute(query)
+            records = cursor.fetchall()
+
+        with open(csv_file_path, 'w', newline='') as csvfile:
+            fieldnames = ['idfr_sch', 'idfr_job_exct']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for record in records:
+                writer.writerow(record)
 
 
 def read_csv_file(file_name, delimiter=','):
@@ -204,6 +233,23 @@ def main(rotina_inicial: str, rotina_destino: str):
         json.dump(result, json_file, indent=4)
 
     return result
+
+
+@caminhos_router.get("/save_records_to_csv/")
+def save_records_to_csv():
+    db_config = {
+        'dbname': 'pcp',
+        'user': 'user_gprom63',
+        'password': 'magic123',
+        'host': 'silo01.postgresql.bdh.desenv.bb.com.br',
+        'port': '5432'
+    }
+    csv_file_path = os.getenv('CSV_FILES') + '/edges_novo_cp.csv'
+    repo = PostgresRepository(**db_config)
+    repo.connect()
+    repo.fetch_and_save_records_to_csv(csv_file_path)
+    repo.disconnect()
+    return {"message": "Registros salvos no csv com sucesso!"}
 
 # if __name__ == '__main__':
 #     file_name = 'edges_novo_cp.csv'
