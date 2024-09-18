@@ -74,10 +74,11 @@ COPY sgs_caminho_critico /sgs_caminho_critico
 COPY --from=base /usr/local/bin /usr/local/bin
 COPY --from=base /usr/local/lib /usr/local/lib
 
+# Instalar uvicorn no estágio final
+RUN pip3 install uvicorn
 
 RUN mkdir /csv  && \
     ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
-
 
 WORKDIR /sgs_caminho_critico
 
