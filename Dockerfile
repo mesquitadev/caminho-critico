@@ -6,28 +6,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM docker.binarios.intranet.bb.com.br/python:3.11 AS pre-sgs-container
+FROM docker.binarios.intranet.bb.com.br/python:3.11 AS base
 
 COPY pip.conf /etc/pip.conf
 COPY requirements.txt /tmp/requirements.txt
 COPY bundle.crt /etc/ssl/certs/bb.bundle.crt
 COPY skip-ssl-check /etc/apt/apt.conf.d/skip-ssl-check
+COPY supervisord.conf /etc/supervisord.conf
 RUN mkdir /app
 WORKDIR /app
 COPY . .
 
-RUN apt-get update && \
-    apt-get install --no-install-recommends -y \
-    unzip=6.0-28 \
-    make=4.3-4.1 \
-    build-essential=12.9 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    pip install --no-cache-dir --upgrade --prefix /usr/local pip==22.0.4 setuptools==60.10.0 wheel==0.37.1 && \
-    pip install --no-cache-dir -r /tmp/requirements.txt
 
-
-FROM pre-sgs-container as pythonBuilder
+FROM base as pythonBuilder
+# hadolint ignore=DL3033,DL3018,DL3059,DL3013
+RUN pip3 --no-cache-dir install --upgrade pip
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN pip3 --no-cache-dir install fastapi==0.94.1
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
@@ -39,13 +32,16 @@ RUN pip3 --no-cache-dir install uvicorn==0.22.0
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN pip3 --no-cache-dir install appdynamics==23.8.0.6197
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
+RUN pip install setuptools==60.10.0 wheel==0.37.1 &&
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 RUN python3 setup.py sdist
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN rm -rf dist/*.whl
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN pip3 install --no-cache-dir dist/sgs_caminho_critico*
 
-FROM docker.binarios.intranet.bb.com.br/python:3.11
+
+FROM base as final
 ARG build_date
 ARG vcs_ref
 ARG versao
@@ -71,29 +67,28 @@ LABEL \
     org.label-schema.dockerfile="${BOM_PATH}/Dockerfile"
 
 # Save Bill of Materials to image. Não remova!
-# COPY README.md CHANGELOG.md LICENSE Dockerfile ${BOM_PATH}/
+COPY README.md CHANGELOG.md LICENSE Dockerfile ${BOM_PATH}/
 
 ENV \
     VERSAO=$versao
 
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+    unzip=6.0-28 \
+    make=4.3-4.1 \
+    build-essential=12.9 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY sgs_caminho_critico /sgs_caminho_critico
 COPY --from=pre-sgs-container /usr/local/bin /usr/local/bin
 COPY --from=pre-sgs-container /usr/local/lib /usr/local/lib
-COPY sources.list /etc/apt/sources.list
-COPY skip-ssl-check /etc/apt/apt.conf.d/skip-ssl-check
-COPY supervisord.conf /etc/supervisord.conf
 
-#  nginx=1.18.0-6.1+deb11u3 && \ apt-get clean && \ chown www-data:www-data /sgs_caminho_critico -R && \
-RUN mkdir /csv && \
-    apt-get update && \
-    rm -rf /var/lib/apt/lists/* && \
+
+RUN mkdir /csv  && \
     ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
 
-# COPY nginx.conf /etc/nginx/nginx.conf
 
 WORKDIR /sgs_caminho_critico
 
-CMD ["uvicorn", "--host", "0.0.0.0", "app.run:app"]
-
-# CMD ["/usr/bin/supervisord","-c","/etc/supervisord.conf"]
-
+CMD ["uvicorn", "--host", "0.0.0.0", "sgs_caminho_critico.run:app"]
