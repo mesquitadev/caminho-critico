@@ -32,7 +32,7 @@ RUN pip3 --no-cache-dir install uvicorn==0.22.0
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN pip3 --no-cache-dir install appdynamics==23.8.0.6197
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
-RUN pip install setuptools==60.10.0 wheel==0.37.1 &&
+RUN pip install setuptools==60.10.0 wheel==0.37.1
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 RUN python3 setup.py sdist
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
