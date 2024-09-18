@@ -81,8 +81,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY sgs_caminho_critico /sgs_caminho_critico
-COPY --from=pre-sgs-container /usr/local/bin /usr/local/bin
-COPY --from=pre-sgs-container /usr/local/lib /usr/local/lib
+COPY --from=base /usr/local/bin /usr/local/bin
+COPY --from=base /usr/local/lib /usr/local/lib
 
 
 RUN mkdir /csv  && \
