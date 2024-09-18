@@ -2,8 +2,9 @@ networkx~=2.8.6
 matplotlib~=3.6.0
 setuptools~=60.2.0
 mysql-connector-python~=8.0.30
-fastapi~=0.87.0
-uvicorn~=0.15.0
+fastapi==0.94.1
+cx_Oracle==8.3.0
+uvicorn~=0.22.0
 requests~=2.28.1
 aiofiles~=22.1.0
 python-multipart~=0.0.5
@@ -18,3 +19,4 @@ pyparsing~=3.1.2
 typing_extensions~=4.12.2
 SQLAlchemy~=2.0.34
 psycopg2~=2.9.9
+appdynamics==23.8.0.6197
