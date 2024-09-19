@@ -86,6 +86,5 @@ RUN mkdir /csv  && \
 
 WORKDIR /sgs_caminho_critico
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
-RUN pip install -r requirements.txt
-
+RUN pip install  --no-cache-dir -r requirements.txt
 CMD ["uvicorn", "--host", "0.0.0.0", "sgs_caminho_critico.run:app"]
