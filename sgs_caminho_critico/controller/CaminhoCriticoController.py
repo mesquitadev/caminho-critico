@@ -185,62 +185,65 @@ def remover_repetidos(caminhos):
 
 @caminhos_router.get("/graph/fields/")
 def main(rotina_inicial: str, rotina_destino: str):
-    db_config = {
-        'dbname': 'pcp',
-        'user': 'user_gprom63',
-        'password': 'magic123',
-        'host': 'silo01.postgresql.bdh.desenv.bb.com.br',
-        'port': '5432'
-    }
-    output_file = os.getenv('CSV_FILES') + 'result.json'
-    file_name = os.getenv('CSV_FILES') + 'edges_novo_cp.csv'
-    if not os.path.exists(file_name):
-        raise HTTPException(status_code=404, detail=f"Arquivo {file_name} nao encontrado, favor rodar o endpoint de atualização.")
-
-    records = read_csv_file(file_name)
-    grafo = construir_grafo(records)
-    caminhos = encontrar_caminho(grafo, rotina_inicial, rotina_destino)
-    if caminhos:
-        caminhos_unicos = remover_repetidos(caminhos)
-        nodes = set()
-        edges = []
-        for caminho in caminhos_unicos:
-            nodes.update(caminho)
-            edges.extend(exibir_edges(caminho))
-        nodes = list(nodes)
-
-        # Conectar ao banco de dados e buscar dados dos nós e edges
-        repo = PostgresRepository(**db_config)
-        repo.connect()
-        nodes_data = repo.fetch_nodes_data(nodes)
-        edges_data = repo.fetch_edges(nodes)
-        repo.disconnect()
-
-        result = {
-            'nodes': [
-                {
-                    key: str(value).strip() if isinstance(value, str) else str(value) if key == 'id' else value
-                    for key, value in node.items()
-                } for node in nodes_data
-            ],
-            'edges': [
-                {
-                    'id': str(edge['id']),
-                    'source': str(edge['source']),
-                    'target': str(edge['target']),
-                    'mainstat': edge['mainstat'],
-                    'secondarystat': edge['secondarystat']
-                } for edge in edges_data
-            ]
+    try:
+        db_config = {
+            'dbname': 'pcp',
+            'user': 'user_gprom63',
+            'password': 'magic123',
+            'host': 'silo01.postgresql.bdh.desenv.bb.com.br',
+            'port': '5432'
         }
-    else:
-        result = {'nodes': [], 'edges': []}
+        output_file = os.getenv('CSV_FILES') + 'result.json'
+        file_name = os.getenv('CSV_FILES') + 'edges_novo_cp.csv'
+        if not os.path.exists(file_name):
+            raise HTTPException(status_code=404, detail=f"Arquivo {file_name} nao encontrado, favor rodar o endpoint de atualização.")
 
-    # Salvar o resultado em um arquivo JSON
-    with open(output_file, 'w') as json_file:
-        json.dump(result, json_file, indent=4)
+        records = read_csv_file(file_name)
+        grafo = construir_grafo(records)
+        caminhos = encontrar_caminho(grafo, rotina_inicial, rotina_destino)
+        if caminhos:
+            caminhos_unicos = remover_repetidos(caminhos)
+            nodes = set()
+            edges = []
+            for caminho in caminhos_unicos:
+                nodes.update(caminho)
+                edges.extend(exibir_edges(caminho))
+            nodes = list(nodes)
 
-    return result
+            # Conectar ao banco de dados e buscar dados dos nós e edges
+            repo = PostgresRepository(**db_config)
+            repo.connect()
+            nodes_data = repo.fetch_nodes_data(nodes)
+            edges_data = repo.fetch_edges(nodes)
+            repo.disconnect()
+
+            result = {
+                'nodes': [
+                    {
+                        key: str(value).strip() if isinstance(value, str) else str(value) if key == 'id' else value
+                        for key, value in node.items()
+                    } for node in nodes_data
+                ],
+                'edges': [
+                    {
+                        'id': str(edge['id']),
+                        'source': str(edge['source']),
+                        'target': str(edge['target']),
+                        'mainstat': edge['mainstat'],
+                        'secondarystat': edge['secondarystat']
+                    } for edge in edges_data
+                ]
+            }
+        else:
+            result = {'nodes': [], 'edges': []}
+
+        # Salvar o resultado em um arquivo JSON
+        with open(output_file, 'w') as json_file:
+            json.dump(result, json_file, indent=4)
+
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro: {str(e)}")
 
 
 @caminhos_router.get("/save_records_to_csv/")
@@ -262,18 +265,3 @@ def save_records_to_csv():
     repo.fetch_and_save_records_to_csv(csv_file_path)
     repo.disconnect()
     return {"message": "Registros salvos no csv com sucesso!"}
-
-# if __name__ == '__main__':
-#     file_name = 'edges_novo_cp.csv'
-#     rotina_inicial = '67958'
-#     rotina_destino = '69884'
-#     db_config = {
-#         'dbname': 'pcp',
-#         'user': 'user_gprom63',
-#         'password': 'magic123',
-#         'host': 'silo01.postgresql.bdh.desenv.bb.com.br',
-#         'port': '5432'
-#     }
-#     output_file = 'result.json'
-#     result = main(file_name, rotina_inicial, rotina_destino, db_config, output_file)
-#     print(result)
