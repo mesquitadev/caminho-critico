@@ -70,7 +70,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY sgs_caminho_critico /sgs_caminho_critico
+COPY . /sgs_caminho_critico
 COPY --from=base /usr/local/bin /usr/local/bin
 COPY --from=base /usr/local/lib /usr/local/lib
 
