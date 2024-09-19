@@ -192,7 +192,7 @@ def main(rotina_inicial: str, rotina_destino: str):
         'host': 'silo01.postgresql.bdh.desenv.bb.com.br',
         'port': '5432'
     }
-    output_file = 'result.json'
+    output_file = os.getenv('CSV_FILES') + 'result.json'
     file_name = os.getenv('CSV_FILES') + '/edges_novo_cp.csv'
     records = read_csv_file(file_name)
     grafo = construir_grafo(records)
