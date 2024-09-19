@@ -74,8 +74,9 @@ COPY sgs_caminho_critico /sgs_caminho_critico
 COPY --from=base /usr/local/bin /usr/local/bin
 COPY --from=base /usr/local/lib /usr/local/lib
 
+# hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN pip3 install --no-cache-dir uvicorn==0.22.0
-
+# hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN mkdir /csv  && \
     ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
 
