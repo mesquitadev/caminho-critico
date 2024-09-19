@@ -183,7 +183,7 @@ def remover_repetidos(caminhos):
     return [list(caminho) for caminho in caminhos_unicos]
 
 
-@caminhos_router.get("/processar_caminhos/")
+@caminhos_router.get("/graph/fields/")
 def main(rotina_inicial: str, rotina_destino: str):
     db_config = {
         'dbname': 'pcp',
