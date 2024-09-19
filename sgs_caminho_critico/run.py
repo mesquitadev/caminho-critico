@@ -4,4 +4,4 @@ from sgs_caminho_critico.controller.CaminhoCriticoController import caminhos_rou
 
 app = FastAPI()
 
-app.include_router(caminhos_router, prefix="/api/", tags=["Graph"])
+app.include_router(caminhos_router, prefix="/api", tags=["Graph"])
