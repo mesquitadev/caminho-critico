@@ -6,7 +6,7 @@ import csv
 import psycopg2
 import json
 from psycopg2.extras import RealDictCursor
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import logging
 
 caminhos_router = APIRouter()
@@ -193,7 +193,10 @@ def main(rotina_inicial: str, rotina_destino: str):
         'port': '5432'
     }
     output_file = os.getenv('CSV_FILES') + 'result.json'
-    file_name = os.getenv('CSV_FILES') + '/edges_novo_cp.csv'
+    file_name = os.getenv('CSV_FILES') + 'edges_novo_cp.csv'
+    if not os.path.exists(file_name):
+        raise HTTPException(status_code=404, detail=f"Arquivo {file_name} nao encontrado, favor rodar o endpoint de atualização.")
+
     records = read_csv_file(file_name)
     grafo = construir_grafo(records)
     caminhos = encontrar_caminho(grafo, rotina_inicial, rotina_destino)
@@ -214,12 +217,17 @@ def main(rotina_inicial: str, rotina_destino: str):
         repo.disconnect()
 
         result = {
-            'nodes': nodes_data,
+            'nodes': [
+                {
+                    key: str(value).strip() if isinstance(value, str) else str(value) if key == 'id' else value
+                    for key, value in node.items()
+                } for node in nodes_data
+            ],
             'edges': [
                 {
-                    'id': edge['id'],
-                    'source': edge['source'],
-                    'target': edge['target'],
+                    'id': str(edge['id']),
+                    'source': str(edge['source']),
+                    'target': str(edge['target']),
                     'mainstat': edge['mainstat'],
                     'secondarystat': edge['secondarystat']
                 } for edge in edges_data
@@ -244,7 +252,11 @@ def save_records_to_csv():
         'host': 'silo01.postgresql.bdh.desenv.bb.com.br',
         'port': '5432'
     }
-    csv_file_path = os.getenv('CSV_FILES') + '/edges_novo_cp.csv'
+    csv_files_path = os.getenv('CSV_FILES')
+    if not csv_files_path:
+        raise HTTPException(status_code=500, detail="Environment variable 'CSV_FILES' is not set.")
+    csv_file_path = os.path.join(csv_files_path, 'edges_novo_cp.csv')
+
     repo = PostgresRepository(**db_config)
     repo.connect()
     repo.fetch_and_save_records_to_csv(csv_file_path)
