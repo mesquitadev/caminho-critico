@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 
-from sgs_caminho_critico.controller.CaminhoCriticoController import caminhos_router
+from sgs_caminho_critico.controller.CaminhoCriticoController import router
 
-app = FastAPI()
+app = FastAPI(
+    redirect_slashes=False,
+)
 
-app.include_router(caminhos_router, prefix="/api", tags=["Graph"])
+app.include_router(router, prefix="/api", tags=["Graph"])
