@@ -175,11 +175,13 @@ def get_node_color(grafo, root_node, origin_color, others_color):
             colors.append(others_color)
     return colors
 
+
 def remover_repetidos(caminhos):
     caminhos_unicos = set()
     for caminho in caminhos:
         caminhos_unicos.add(tuple(caminho))
     return [list(caminho) for caminho in caminhos_unicos]
+
 
 @router.get("/graph/fields/")
 def main(rotina_inicial: str, rotina_destino: str):
@@ -194,7 +196,8 @@ def main(rotina_inicial: str, rotina_destino: str):
         output_file = os.getenv('CSV_FILES') + 'result.json'
         file_name = os.getenv('CSV_FILES') + 'edges_novo_cp.csv'
         if not os.path.exists(file_name):
-            raise HTTPException(status_code=404, detail=f"Arquivo {file_name} nao encontrado, favor rodar o endpoint de atualização.")
+            raise HTTPException(status_code=404,
+                                detail=f"Arquivo {file_name} nao encontrado, favor rodar o endpoint de atualização.")
 
         records = read_csv_file(file_name)
         grafo = construir_grafo(records)
@@ -294,6 +297,7 @@ def get_graph_fields():
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
 
 @router.get("/health", status_code=200)
 def health_check():
