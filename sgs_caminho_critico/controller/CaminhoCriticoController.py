@@ -183,7 +183,38 @@ def remover_repetidos(caminhos):
     return [list(caminho) for caminho in caminhos_unicos]
 
 
-@router.get("/graph/fields/")
+@router.get("/graph/fields", response_model=dict, response_description="Graph fields")
+def get_graph_fields():
+    try:
+        edges_fields = [
+            {"field_name": "id", "type": "string"},
+            {"field_name": "source", "type": "string"},
+            {"field_name": "target", "type": "string"},
+            {"field_name": "mainStat", "type": "number"}
+        ]
+
+        nodes_fields = [
+            {"field_name": "id", "type": "string"},
+            {"field_name": "title", "type": "string"},
+            {"field_name": "mainStat", "type": "string"},
+            {"field_name": "secondaryStat", "type": "number"},
+            {"field_name": "arc__failed", "type": "number", "color": "red"},
+            {"field_name": "arc__passed", "type": "number", "color": "green"},
+            {"field_name": "detail__role", "type": "string", "displayName": "Role"}
+        ]
+
+        result = {
+            "edges_fields": edges_fields,
+            "nodes_fields": nodes_fields
+        }
+
+        return result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.get("/graph/data")
 def main(rotina_inicial: str, rotina_destino: str):
     try:
         db_config = {
@@ -247,7 +278,12 @@ def main(rotina_inicial: str, rotina_destino: str):
         raise HTTPException(status_code=500, detail=f"Erro: {str(e)}")
 
 
-@router.get("/save_records_to_csv/")
+@router.get("/run/health", status_code=200)
+def health_check():
+    return {"status": "ok"}
+
+
+@router.get("/report/getcsv")
 def save_records_to_csv():
     db_config = {
         'dbname': 'pcp',
@@ -266,39 +302,3 @@ def save_records_to_csv():
     repo.fetch_and_save_records_to_csv(csv_file_path)
     repo.disconnect()
     return {"message": "Registros salvos no csv com sucesso!"}
-
-
-@router.get("/graph/fields", response_model=dict, response_description="Graph fields")
-def get_graph_fields():
-    try:
-        edges_fields = [
-            {"field_name": "id", "type": "string"},
-            {"field_name": "source", "type": "string"},
-            {"field_name": "target", "type": "string"},
-            {"field_name": "mainStat", "type": "number"}
-        ]
-
-        nodes_fields = [
-            {"field_name": "id", "type": "string"},
-            {"field_name": "title", "type": "string"},
-            {"field_name": "mainStat", "type": "string"},
-            {"field_name": "secondaryStat", "type": "number"},
-            {"field_name": "arc__failed", "type": "number", "color": "red"},
-            {"field_name": "arc__passed", "type": "number", "color": "green"},
-            {"field_name": "detail__role", "type": "string", "displayName": "Role"}
-        ]
-
-        result = {
-            "edges_fields": edges_fields,
-            "nodes_fields": nodes_fields
-        }
-
-        return result
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-
-
-@router.get("/health", status_code=200)
-def health_check():
-    return {"status": "ok"}
