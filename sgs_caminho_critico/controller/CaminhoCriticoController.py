@@ -190,17 +190,19 @@ def get_graph_fields():
             {"field_name": "id", "type": "string"},
             {"field_name": "source", "type": "string"},
             {"field_name": "target", "type": "string"},
-            {"field_name": "mainStat", "type": "number"}
+            {"field_name": "mainStat", "type": "number"},
+            {"field_name": "secondaryStat", "type": "string"}
         ]
 
         nodes_fields = [
             {"field_name": "id", "type": "string"},
             {"field_name": "title", "type": "string"},
             {"field_name": "mainStat", "type": "string"},
-            {"field_name": "secondaryStat", "type": "number"},
-            {"field_name": "arc__failed", "type": "number", "color": "red"},
-            {"field_name": "arc__passed", "type": "number", "color": "green"},
-            {"field_name": "detail__role", "type": "string", "displayName": "Role"}
+            {"field_name": "icon", "type": "string"},
+            {"field_name": "color", "type": "string"},
+            {"field_name": "subtitle", "type": "string"},
+            {"field_name": "detail__pasta", "type": "string"},
+            {"field_name": "detail__amb", "type": "string"}
         ]
 
         result = {
