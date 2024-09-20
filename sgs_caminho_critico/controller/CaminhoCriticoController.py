@@ -190,7 +190,7 @@ def get_graph_fields():
             {"field_name": "id", "type": "string"},
             {"field_name": "source", "type": "string"},
             {"field_name": "target", "type": "string"},
-            {"field_name": "mainStat", "type": "number"},
+            {"field_name": "mainStat", "type": "string"},
             {"field_name": "secondaryStat", "type": "string"}
         ]
 
@@ -200,9 +200,22 @@ def get_graph_fields():
             {"field_name": "mainStat", "type": "string"},
             {"field_name": "icon", "type": "string"},
             {"field_name": "color", "type": "string"},
-            {"field_name": "subtitle", "type": "string"},
+            {"field_name": "subTitle", "type": "string"},
             {"field_name": "detail__pasta", "type": "string"},
-            {"field_name": "detail__amb", "type": "string"}
+            {"field_name": "detail__amb", "type": "string"},
+            {
+                "color": "red",
+                "displayName": "Failed",
+                "field_name": "arc__failed",
+                "type": "number",
+            },
+            {
+                "color": "green",
+                "displayName": "Passed",
+                "field_name": "arc__passed",
+                "type": "number",
+            },
+            {"displayName": "Role", "field_name": "detail__role", "type": "string"},
         ]
 
         result = {
