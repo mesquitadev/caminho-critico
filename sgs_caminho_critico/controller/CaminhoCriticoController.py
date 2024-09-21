@@ -166,16 +166,6 @@ def exibir_edges(caminho):
     return edges
 
 
-def get_node_color(grafo, root_node, origin_color, others_color):
-    colors = []
-    for node in grafo:
-        if node == root_node:
-            colors.append(origin_color)
-        else:
-            colors.append(others_color)
-    return colors
-
-
 def remover_repetidos(caminhos):
     caminhos_unicos = set()
     for caminho in caminhos:
@@ -201,21 +191,17 @@ def get_graph_fields():
             {"field_name": "icon", "type": "string"},
             {"field_name": "color", "type": "string"},
             {"field_name": "subTitle", "type": "string"},
-            {"field_name": "detail__pasta", "type": "string"},
-            {"field_name": "detail__amb", "type": "string"},
             {
-                "color": "red",
-                "displayName": "Failed",
-                "field_name": "arc__failed",
-                "type": "number",
+                "displayName": "Pasta",
+                "field_name": "detail__pasta",
+                "type": "string"
             },
             {
-                "color": "green",
-                "displayName": "Passed",
-                "field_name": "arc__passed",
-                "type": "number",
-            },
-            {"displayName": "Role", "field_name": "detail__role", "type": "string"},
+                "displayName": "Ambiente",
+                "field_name": "detail__amb",
+                "type": "string"
+            }
+
         ]
 
         result = {
@@ -273,8 +259,10 @@ def main(rotina_inicial: str, rotina_destino: str):
                         'icon': node['icon'].strip() if isinstance(node['icon'], str) else node['icon'],
                         'color': node['color'].strip() if isinstance(node['color'], str) else node['color'],
                         'subTitle': node['subtitle'].strip() if isinstance(node['subtitle'], str) else node['subtitle'],
-                        'detail__pasta': node['detail__pasta'].strip() if isinstance(node['detail__pasta'], str) else node['detail__pasta'],
-                        'detail__amb': node['detail__amb'].strip() if isinstance(node['detail__amb'], str) else node['detail__amb']
+                        'detail__pasta': node['detail__pasta'].strip() if isinstance(node['detail__pasta'], str) else
+                        node['detail__pasta'],
+                        'detail__amb': node['detail__amb'].strip() if isinstance(node['detail__amb'], str) else node[
+                            'detail__amb']
                     } for node in nodes_data
                 ],
                 'edges': [
