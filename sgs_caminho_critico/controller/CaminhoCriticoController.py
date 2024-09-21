@@ -267,8 +267,14 @@ def main(rotina_inicial: str, rotina_destino: str):
             result = {
                 'nodes': [
                     {
-                        key: str(value).strip() if isinstance(value, str) else str(value) if key == 'id' else value
-                        for key, value in node.items()
+                        'id': str(node['id']).strip() if isinstance(node['id'], str) else str(node['id']),
+                        'title': node['title'].strip() if isinstance(node['title'], str) else node['title'],
+                        'mainStat': node['mainstat'].strip() if isinstance(node['mainstat'], str) else node['mainstat'],
+                        'icon': node['icon'].strip() if isinstance(node['icon'], str) else node['icon'],
+                        'color': node['color'].strip() if isinstance(node['color'], str) else node['color'],
+                        'subTitle': node['subtitle'].strip() if isinstance(node['subtitle'], str) else node['subtitle'],
+                        'detail__pasta': node['detail__pasta'].strip() if isinstance(node['detail__pasta'], str) else node['detail__pasta'],
+                        'detail__amb': node['detail__amb'].strip() if isinstance(node['detail__amb'], str) else node['detail__amb']
                     } for node in nodes_data
                 ],
                 'edges': [
@@ -276,8 +282,8 @@ def main(rotina_inicial: str, rotina_destino: str):
                         'id': str(edge['id']),
                         'source': str(edge['source']),
                         'target': str(edge['target']),
-                        'mainstat': edge['mainstat'],
-                        'secondarystat': edge['secondarystat']
+                        'mainStat': edge['mainstat'],
+                        'secondaryStat': edge['secondarystat']
                     } for edge in edges_data
                 ]
             }
