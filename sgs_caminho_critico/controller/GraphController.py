@@ -49,7 +49,7 @@ def get_graph_fields():
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
-@router.get("/graph/data", response_model=dict, response_description="Processa dados do CSV e retorna em JSON formatado")
+@router.get("/graph/data", response_model=dict, response_description="Processa dados do CSV e retorna em JSON")
 def processar_dados_retornar_json(rotina_inicial: str, rotina_destino: str):
     try:
         db_config = {
@@ -117,4 +117,3 @@ def processar_dados_retornar_json(rotina_inicial: str, rotina_destino: str):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro: {str(e)}")
-
