@@ -18,7 +18,6 @@ WORKDIR /app
 COPY . .
 
 
-FROM base as pythonBuilder
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN pip3 --no-cache-dir install --upgrade pip
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
@@ -31,7 +30,7 @@ RUN rm -rf dist/*.whl
 RUN pip3 install --no-cache-dir dist/sgs_caminho_critico*
 
 
-FROM base as final
+FROM docker.binarios.intranet.bb.com.br/python:3.11
 ARG build_date
 ARG vcs_ref
 ARG versao
@@ -62,29 +61,14 @@ COPY README.md CHANGELOG.md LICENSE Dockerfile ${BOM_PATH}/
 ENV \
     VERSAO=$versao
 
-RUN apt-get update && \
-    apt-get install --no-install-recommends -y \
-    unzip=6.0-28 \
-    make=4.3-4.1 \
-    build-essential=12.9 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-
-
 COPY . /sgs_caminho_critico
 COPY --from=base /usr/local/bin /usr/local/bin
 COPY --from=base /usr/local/lib /usr/local/lib
 
-## hadolint ignore=DL3033,DL3018,DL3059,DL3013
-#RUN pip3 install --no-cache-dir uvicorn==0.22.0
-
-# hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN mkdir /csv  && \
-    ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
-
+    ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime && \
+    rm -rf /sgs_caminho_critico/.venv
 
 WORKDIR /sgs_caminho_critico
-# hadolint ignore=DL3033,DL3018,DL3059,DL3013
-RUN pip install  --no-cache-dir -r requirements.txt
-CMD ["uvicorn", "--host", "0.0.0.0", "sgs_caminho_critico.run:app"]
+
+CMD ["python","-m","uvicorn", "--host", "0.0.0.0", "sgs_caminho_critico.run:app"]

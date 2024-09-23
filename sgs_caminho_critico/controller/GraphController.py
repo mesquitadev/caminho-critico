@@ -26,6 +26,18 @@ def get_graph_fields():
             {"field_name": "mainStat", "type": "string"},
             {"field_name": "subTitle", "type": "string"},
             {
+                "color": "red",
+                "displayName": "Failed",
+                "field_name": "arc__failed",
+                "type": "number",
+            },
+            {
+                "color": "green",
+                "displayName": "Passed",
+                "field_name": "arc__passed",
+                "type": "number",
+            },
+            {
                 "displayName": "Pasta",
                 "field_name": "detail__pasta",
                 "type": "string"
@@ -94,7 +106,9 @@ def processar_dados_retornar_json(rotina_inicial: str, rotina_destino: str):
                         'detail__pasta': node['detail__pasta'].strip() if isinstance(node['detail__pasta'], str) else
                         node['detail__pasta'],
                         'detail__amb': node['detail__amb'].strip() if isinstance(node['detail__amb'], str) else node[
-                            'detail__amb']
+                            'detail__amb'],
+                        'arc__failed': 0.0,
+                        'arc__passed': 1.0
                     } for node in nodes_data
                 ],
                 'edges': [

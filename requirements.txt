@@ -17,5 +17,5 @@ packaging~=24.1
 pyparsing~=3.1.2
 typing_extensions~=4.12.2
 SQLAlchemy~=2.0.34
-psycopg2~=2.9.9
+psycopg2-binary~=2.9.9
 appdynamics==23.8.0.6197

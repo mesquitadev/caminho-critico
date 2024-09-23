@@ -1,4 +1,5 @@
 build.sh
 .git
 .gitignore
+.venv
 tests/
