@@ -42,7 +42,7 @@ setup(
     include_package_data=True,
     url="https://fontes.intranet.bb.com.br/sgs/sgs-caminho-critico/sgs-caminho-critico",
     license="COPYRIGHT",
-    description="Controi mapa de rotinas batch",
+    description="Constroi mapa de rotinas batch",
     long_description=long_description,
     zip_safe=False,
     install_requires=run_requirements,
