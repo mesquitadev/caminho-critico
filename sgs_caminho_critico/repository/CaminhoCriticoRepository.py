@@ -104,9 +104,11 @@ class CaminhoCriticoRepository:
     # Método para inserir dados na tabela JOB_EXEA_CTM
     def insert_job_exea_ctm_data(self, job_exea_ctm_data):
         with self.connection.cursor() as cursor:
-            query = """
-            INSERT INTO batch.job_exea_ctm (idfr_sch, idfr_exea, dt_mov, obs_job, nr_exea, flx_atu, est_jobh, est_excd, idfr_est_job, dt_atl)
-            VALUES (%(idfr_sch)s, %(idfr_exea)s, %(dt_mov)s, %(obs_job)s, %(nr_exea)s, %(flx_atu)s, %(est_jobh)s, %(est_excd)s, %(idfr_est_job)s, %(dt_atl)s)
-            """
+            query = ("\n"
+                     "            INSERT INTO batch.job_exea_ctm (idfr_sch, idfr_exea, dt_mov, obs_job, \n"
+                     "            nr_exea, flx_atu, est_jobh, est_excd, idfr_est_job, dt_atl)\n"
+                     "            VALUES (%(idfr_sch)s, %(idfr_exea)s, %(dt_mov)s, %(obs_job)s, \n"
+                     "            %(nr_exea)s, %(flx_atu)s, %(est_jobh)s, %(est_excd)s, %(idfr_est_job)s, %(dt_atl)s)\n"
+                     "            ")
             cursor.executemany(query, job_exea_ctm_data)
             self.connection.commit()
