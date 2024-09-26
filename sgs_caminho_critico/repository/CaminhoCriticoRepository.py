@@ -90,3 +90,23 @@ class CaminhoCriticoRepository:
             writer.writeheader()
             for record in records:
                 writer.writerow(record)
+
+    # Método para buscar dados da tabela SCH_AGDD
+    def fetch_sch_agdd_data(self):
+        with self.connection.cursor(cursor_factory=RealDictCursor) as cursor:
+            query = """
+            SELECT idfr_sch, nm_SVDR, pas_PAI, nm_MBR, sub_apl
+            FROM batch.sch_agdd
+            """
+            cursor.execute(query)
+            return cursor.fetchall()
+
+    # Método para inserir dados na tabela JOB_EXEA_CTM
+    def insert_job_exea_ctm_data(self, job_exea_ctm_data):
+        with self.connection.cursor() as cursor:
+            query = """
+            INSERT INTO batch.job_exea_ctm (idfr_sch, idfr_exea, dt_mov, obs_job, nr_exea, flx_atu, est_jobh, est_excd, idfr_est_job, dt_atl)
+            VALUES (%(idfr_sch)s, %(idfr_exea)s, %(dt_mov)s, %(obs_job)s, %(nr_exea)s, %(flx_atu)s, %(est_jobh)s, %(est_excd)s, %(idfr_est_job)s, %(dt_atl)s)
+            """
+            cursor.executemany(query, job_exea_ctm_data)
+            self.connection.commit()
