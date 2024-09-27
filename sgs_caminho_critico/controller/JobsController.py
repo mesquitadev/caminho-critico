@@ -125,11 +125,11 @@ def capturar_e_atualizar_status_jobs():
         for new_job in job_exea_ctm_data:
             match_found = False
             for existing_job in existing_records:
-                if new_job['idfr_sch'] == existing_job['idfr_sch'] and new_job['idfr_exea'] == existing_job[
-                    'idfr_exea']:
+                if (new_job['idfr_sch'] == existing_job['idfr_sch'] and
+                        new_job['idfr_exea'] == existing_job['idfr_exea']):
                     match_found = True
-                    if new_job['nr_exea'] != existing_job['nr_exea'] or new_job['idfr_est_job'] != existing_job[
-                        'idfr_est_job']:
+                    if (new_job['nr_exea'] != existing_job['nr_exea']
+                            or new_job['idfr_est_job'] != existing_job['idfr_est_job']):
                         records_to_update.append(new_job)
                     break
             if not match_found:
