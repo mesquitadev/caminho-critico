@@ -1,8 +1,11 @@
+import json
+import os
+import traceback
 import urllib3
 from fastapi import APIRouter, HTTPException
 import requests
 from datetime import datetime, timedelta
-from sgs_caminho_critico.repository import CaminhoCriticoRepository
+from sgs_caminho_critico.repository.CaminhoCriticoRepository import CaminhoCriticoRepository
 
 # Desabilitar avisos de certificado SSL
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -29,12 +32,12 @@ def authenticate():
         "accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded"
     }
-    response = requests.post(auth_url, headers=headers, data=auth_data)
+    response = requests.post(auth_url, headers=headers, data=auth_data, verify=False)
     if response.status_code == 200:
         token = response.json().get("access_token")
         token_expiration = datetime.now() + timedelta(minutes=30)
     else:
-        raise HTTPException(status_code=response.status_code, detail="Erro ao autenticar na API Control-M Services")
+        raise HTTPException(status_code=response.status_code, detail="Erro ao autenticar na API do PCP")
 
 
 def get_token():
@@ -44,7 +47,7 @@ def get_token():
     return token
 
 
-@jobs_router.get("/get-status", response_model=dict, response_description="Captura e atualiza o status dos jobs")
+@jobs_router.get("/update-status", response_model=dict, response_description="Captura e atualiza o status dos jobs")
 def capturar_e_atualizar_status_jobs():
     try:
         # Obter o token atualizado
@@ -60,8 +63,8 @@ def capturar_e_atualizar_status_jobs():
         data = {
             "jobname": "A*",
             "keyBB": "c1333806",
-            "limit": 10,
-            "orderDateFrom": "240926",
+            "limit": 2000,
+            "orderDateFrom": "240820",
             "orderDateTo": "240926",
             "server": "PLEXDES"
         }
@@ -86,33 +89,65 @@ def capturar_e_atualizar_status_jobs():
 
         # Buscar IDs dos jobs na tabela SCH_AGDD
         sch_agdd_data = repo.fetch_sch_agdd_data()
+        # Salvar o resultado em um arquivo JSON para cache
+        with open(os.getenv('CSV_FILES') + 'file.json', 'w') as json_file:
+            json.dump(jobs_data, json_file, indent=4)
 
         # Preparar dados para inserção na tabela JOB_EXEA_CTM
         job_exea_ctm_data = []
         for job in jobs_data:
             for sch_job in sch_agdd_data:
-                if (job['ctm'] == sch_job['nm_SVDR'] and
-                        job['folder'] == sch_job['pas_PAI'] and
-                        job['name'] == sch_job['nm_MBR'] and
+                if (
+                        job['ctm'] == sch_job['nm_svdr'] and
+                        job['folder'] == sch_job['pas_pai'] and
+                        job['name'] == sch_job['nm_mbr'] and
                         job['subApplication'] == sch_job['sub_apl']):
                     job_exea_ctm_data.append({
                         'idfr_sch': sch_job['idfr_sch'],
                         'idfr_exea': job['jobId'][-5:],
-                        'dt_mov': job['orderDate'],
+                        'dt_mvt': datetime.strptime(job['orderDate'], '%y%m%d').strftime('%Y-%m-%d'),
                         'obs_job': '',
                         'nr_exea': job['numberOfRuns'],
                         'flx_atu': True,
                         'est_jobh': job['held'],
                         'est_excd': job['deleted'],
-                        'idfr_est_job': 'regra_a_ser_definida',
-                        'dt_atl': datetime.now()
+                        'idfr_est_job': 10,  # Ajustar
+                        'dt_atl': datetime.now().isoformat()
                     })
 
-        # Gravar os dados na tabela JOB_EXEA_CTM
-        repo.insert_job_exea_ctm_data(job_exea_ctm_data)
+        # Fetch existing records from the database
+        existing_records = repo.fetch_existing_job_exea_ctm_data([job['idfr_sch'] for job in job_exea_ctm_data])
+
+        # Prepare data for insertion, update, or deletion
+        records_to_insert = []
+        records_to_update = []
+
+        for new_job in job_exea_ctm_data:
+            match_found = False
+            for existing_job in existing_records:
+                if new_job['idfr_sch'] == existing_job['idfr_sch'] and new_job['idfr_exea'] == existing_job[
+                    'idfr_exea']:
+                    match_found = True
+                    if new_job['nr_exea'] != existing_job['nr_exea'] or new_job['idfr_est_job'] != existing_job[
+                        'idfr_est_job']:
+                        records_to_update.append(new_job)
+                    break
+            if not match_found:
+                records_to_insert.append(new_job)
+
+        # Delete records that need to be updated
+        if records_to_update:
+            repo.delete_job_exea_ctm_data([job['idfr_sch'] for job in records_to_update])
+
+        # Insert new and updated records
+        if records_to_insert or records_to_update:
+            repo.insert_job_exea_ctm_data(records_to_insert + records_to_update)
+
         repo.disconnect()
 
-        return {"status": "success", "message": "Dados dos jobs atualizados com sucesso"}
+        return {"status": "success", "message": "Dados dos jobs atualizados com sucesso",
+                "updated_jobs": job_exea_ctm_data}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro: {str(e)}")
+        error_message = f"Erro: {str(e)}\n{traceback.format_exc()}"
+        raise HTTPException(status_code=500, detail=error_message)

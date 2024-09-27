@@ -107,8 +107,9 @@ def processar_dados_retornar_json(rotina_inicial: str, rotina_destino: str):
                         node['detail__pasta'],
                         'detail__amb': node['detail__amb'].strip() if isinstance(node['detail__amb'], str) else node[
                             'detail__amb'],
-                        'arc__failed': 0.0,
-                        'arc__passed': 1.0
+                        'icon': node['icon'].strip() if isinstance(node['icon'], str) else node['icon'],
+                        'color': node['color'].strip() if isinstance(node['color'], str) else node['color'],
+
                     } for node in nodes_data
                 ],
                 'edges': [

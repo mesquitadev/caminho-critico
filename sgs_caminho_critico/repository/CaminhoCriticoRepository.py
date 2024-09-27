@@ -30,13 +30,15 @@ class CaminhoCriticoRepository:
 
     def fetch_nodes_data(self, node_ids):
         with self.connection.cursor(cursor_factory=RealDictCursor) as cursor:
-            query = """
-            select
-            'stopwatch' as icon, '#377' as color, 'wait' as mainstat,
-            sa.idfr_sch as id, sa.nm_mbr as title, sa.sub_apl as subtitle, sa.pas_pai as detail__pasta, sa.nm_svdr as detail__amb
-            from batch.sch_agdd sa
-            where idfr_sch in %s
-            """
+            query = ("\n"
+                     "            select\n"
+                     "            'stopwatch' as icon, '#377' as color, je.idfr_est_job as mainstat,\n"
+                     "            sa.idfr_sch as id, sa.nm_mbr as title, sa.sub_apl as subtitle, "
+                     "sa.pas_pai as detail__pasta, sa.nm_svdr as detail__amb\n"
+                     "            from batch.sch_agdd sa\n"
+                     "            left join batch.job_exea_ctm je on sa.idfr_sch = je.idfr_sch\n"
+                     "            where sa.idfr_sch in %s\n"
+                     "            ")
             cursor.execute(query, (tuple(node_ids),))
             return cursor.fetchall()
 
@@ -95,20 +97,47 @@ class CaminhoCriticoRepository:
     def fetch_sch_agdd_data(self):
         with self.connection.cursor(cursor_factory=RealDictCursor) as cursor:
             query = """
-            SELECT idfr_sch, nm_SVDR, pas_PAI, nm_MBR, sub_apl
-            FROM batch.sch_agdd
-            """
+        SELECT idfr_sch, nm_SVDR, pas_PAI, nm_MBR, sub_apl
+        FROM batch.sch_agdd
+        """
             cursor.execute(query)
-            return cursor.fetchall()
+            records = cursor.fetchall()
+
+            # Remove leading and trailing spaces from each field in each record
+            cleaned_records = [
+                {key: value.strip() if isinstance(value, str) else value for key, value in record.items()}
+                for record in records
+            ]
+
+            return cleaned_records
 
     # Método para inserir dados na tabela JOB_EXEA_CTM
     def insert_job_exea_ctm_data(self, job_exea_ctm_data):
         with self.connection.cursor() as cursor:
             query = ("\n"
-                     "            INSERT INTO batch.job_exea_ctm (idfr_sch, idfr_exea, dt_mov, obs_job, \n"
+                     "            INSERT INTO batch.job_exea_ctm (idfr_sch, idfr_exea, dt_mvt, obs_job, \n"
                      "            nr_exea, flx_atu, est_jobh, est_excd, idfr_est_job, dt_atl)\n"
-                     "            VALUES (%(idfr_sch)s, %(idfr_exea)s, %(dt_mov)s, %(obs_job)s, \n"
+                     "            VALUES (%(idfr_sch)s, %(idfr_exea)s, %(dt_mvt)s, %(obs_job)s, \n"
                      "            %(nr_exea)s, %(flx_atu)s, %(est_jobh)s, %(est_excd)s, %(idfr_est_job)s, %(dt_atl)s)\n"
                      "            ")
             cursor.executemany(query, job_exea_ctm_data)
+            self.connection.commit()
+
+    def fetch_existing_job_exea_ctm_data(self, idfr_sch_list):
+        with self.connection.cursor(cursor_factory=RealDictCursor) as cursor:
+            query = """
+        SELECT idfr_sch, idfr_exea, nr_exea, idfr_est_job
+        FROM batch.job_exea_ctm
+        WHERE idfr_sch IN %s
+        """
+            cursor.execute(query, (tuple(idfr_sch_list),))
+            return cursor.fetchall()
+
+    def delete_job_exea_ctm_data(self, idfr_sch_list):
+        with self.connection.cursor() as cursor:
+            query = """
+        DELETE FROM batch.job_exea_ctm
+        WHERE idfr_sch IN %s
+        """
+            cursor.execute(query, (tuple(idfr_sch_list),))
             self.connection.commit()
