@@ -2,9 +2,12 @@ import json
 import os
 import traceback
 import urllib3
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 import requests
 from datetime import datetime, timedelta
+
+from pydantic import BaseModel
+
 from sgs_caminho_critico.repository.CaminhoCriticoRepository import CaminhoCriticoRepository
 
 # Desabilitar avisos de certificado SSL
@@ -47,8 +50,31 @@ def get_token():
     return token
 
 
-@jobs_router.get("/update-status", response_model=dict, response_description="Captura e atualiza o status dos jobs")
-def capturar_e_atualizar_status_jobs():
+status_mapping = {
+    "Ended OK": 7,
+    "Ended Not OK": 8,
+    "Wait User": 12,
+    "Wait resource": 13,
+    "Wait host": 14,
+    "Wait workload": 15,
+    "Wait Condition": 2,
+    "Executing": 4,
+    "Status unknown": 16,
+    "Desconhecido": 0
+}
+
+
+class JobStatusRequest(BaseModel):
+    jobname: str
+    keyBB: str
+    limit: int
+    orderDateFrom: str
+    orderDateTo: str
+    server: str
+
+
+@jobs_router.post("/update-status", response_model=dict, response_description="Captura e atualiza o status dos jobs")
+async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
     try:
         # Obter o token atualizado
         access_token = get_token()
@@ -60,17 +86,9 @@ def capturar_e_atualizar_status_jobs():
             "accept": "application/json",
             "Content-Type": "application/json"
         }
-        data = {
-            "jobname": "A*",
-            "keyBB": "c1333806",
-            "limit": 2000,
-            "orderDateFrom": "240820",
-            "orderDateTo": "240926",
-            "server": "PLEXDES"
-        }
 
         # Fazer a requisição para a API Control-M Services
-        response = requests.post(api_url, headers=headers, json=data, verify=False)
+        response = requests.post(api_url, headers=headers, json=request.dict(), verify=False)
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="Erro ao acessar a API Control-M Services")
 
@@ -96,6 +114,7 @@ def capturar_e_atualizar_status_jobs():
         # Preparar dados para inserção na tabela JOB_EXEA_CTM
         job_exea_ctm_data = []
         for job in jobs_data:
+            print(f'id_job {json.dumps(job, indent=4)}')
             for sch_job in sch_agdd_data:
                 if (
                         job['ctm'] == sch_job['nm_svdr'] and
@@ -111,7 +130,7 @@ def capturar_e_atualizar_status_jobs():
                         'flx_atu': True,
                         'est_jobh': job['held'],
                         'est_excd': job['deleted'],
-                        'idfr_est_job': 10,  # Ajustar
+                        'idfr_est_job': status_mapping.get(job['status'], 0),
                         'dt_atl': datetime.now().isoformat()
                     })
 

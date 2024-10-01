@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, date
 
 from fastapi import APIRouter, HTTPException
 import json
@@ -96,20 +97,38 @@ def processar_dados_retornar_json(rotina_inicial: str, rotina_destino: str):
             edges_data = repo.fetch_edges(nodes)
             repo.disconnect()
 
+            def map_mainstat_to_color_icon(mainstat):
+                mapping = {
+                    'Executing': {'color': '#995', 'icon': 'spinner'},
+                    'Ended Ok': {'color': '#250', 'icon': 'check-circle'},
+                    'Abended': {'color': '#500', 'icon': 'bug'},
+                    'Status unknown': {'color': '#377', 'icon': 'question-circle'},
+                    'Disappeared': {'color': '#377', 'icon': 'question-circle'},
+                    'Não encontrado': {'color': '#377', 'icon': 'sync-slash'},
+                    'não schedulado': {'color': '#377', 'icon': 'sync-slash'}
+                }
+                return mapping.get(mainstat, {'color': '#377', 'icon': 'stopwatch'})
+
+            def format_order_date(order_date):
+                if isinstance(order_date, str):
+                    return datetime.strptime(order_date, '%y%m%d').strftime('%Y-%m-%d')
+                elif isinstance(order_date, (datetime, date)):
+                    return order_date.strftime('%Y-%m-%d')
+                else:
+                    raise ValueError("order_date must be a string, datetime, or date object")
+
             result = {
                 'nodes': [
                     {
                         'id': str(node['id']).strip() if isinstance(node['id'], str) else str(node['id']),
-                        'title': node['title'].strip() if isinstance(node['title'], str) else node['title'],
+                        'title': f"{node['member_name'].strip() if isinstance(node['member_name'], str) else node['member_name']} - {node['sub_appl'].strip() if isinstance(node['sub_appl'], str) else node['sub_appl']}",
                         'mainStat': node['mainstat'].strip() if isinstance(node['mainstat'], str) else node['mainstat'],
-                        'subTitle': node['subtitle'].strip() if isinstance(node['subtitle'], str) else node['subtitle'],
-                        'detail__pasta': node['detail__pasta'].strip() if isinstance(node['detail__pasta'], str) else
-                        node['detail__pasta'],
-                        'detail__amb': node['detail__amb'].strip() if isinstance(node['detail__amb'], str) else node[
-                            'detail__amb'],
-                        'icon': node['icon'].strip() if isinstance(node['icon'], str) else node['icon'],
-                        'color': node['color'].strip() if isinstance(node['color'], str) else node['color'],
-
+                        'subTitle': f"{node['ambiente'].strip() if isinstance(node['ambiente'], str) else node['ambiente']}:{str(node['orderid']).strip() if isinstance(node['orderid'], str) else str(node['orderid'])}",
+                        'detail__pasta': node['pasta'].strip() if isinstance(node['pasta'], str) else node['pasta'],
+                        'detail__run_number': node['run_number'],
+                        'detail__odate': format_order_date(node['odate']),
+                        'icon': map_mainstat_to_color_icon(node['mainstat'])['icon'],
+                        'color': map_mainstat_to_color_icon(node['mainstat'])['color'],
                     } for node in nodes_data
                 ],
                 'edges': [
