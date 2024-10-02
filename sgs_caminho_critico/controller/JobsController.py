@@ -2,7 +2,7 @@ import json
 import os
 import traceback
 import urllib3
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException
 import requests
 from datetime import datetime, timedelta
 

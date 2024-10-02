@@ -32,7 +32,7 @@ class CaminhoCriticoRepository:
         with self.connection.cursor(cursor_factory=RealDictCursor) as cursor:
             query = """
                 SELECT
-                    'stopwatch' AS icon, 
+                    'stopwatch' AS icon,
                     '#377' AS color,
                     COALESCE(tej.nm_est_job, 'não schedulado') AS mainstat,
                     sa.idfr_sch AS id, 
@@ -40,7 +40,7 @@ class CaminhoCriticoRepository:
                     sa.sub_apl AS sub_appl, 
                     sa.pas_pai AS pasta, 
                     sa.nm_svdr AS ambiente,
-                    je.idfr_exea AS orderid,  
+                    je.idfr_exea AS orderid,
                     je.nr_exea AS run_number,
                     je.dt_mvt AS odate
                 FROM batch.sch_agdd sa
