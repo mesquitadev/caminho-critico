@@ -111,6 +111,8 @@ def processar_dados_retornar_json(rotina_inicial: str, rotina_destino: str):
                 return mapping.get(mainstat, {'color': '#377', 'icon': 'stopwatch'})
 
             def format_order_date(order_date):
+                if not order_date:
+                    return ''
                 if isinstance(order_date, str):
                     try:
                         return datetime.strptime(order_date, '%Y-%m-%d').strftime('%Y-%m-%d')
