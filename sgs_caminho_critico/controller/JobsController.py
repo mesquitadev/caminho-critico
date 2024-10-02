@@ -73,26 +73,36 @@ class JobStatusRequest(BaseModel):
     server: str
 
 
+def load_jobs_data():
+    json_file_path = os.path.join(os.getcwd(), 'res.json')
+    print(f'json_file_path {json_file_path}')
+    with open(json_file_path, 'r') as file:
+        data = json.load(file)
+    return data.get('statuses', [])
+
+
 @jobs_router.post("/update-status", response_model=dict, response_description="Captura e atualiza o status dos jobs")
 async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
     try:
-        # Obter o token atualizado
-        access_token = get_token()
+        # # Obter o token atualizado
+        # access_token = get_token()
+        #
+        # # Configurações da API Control-M Services
+        # api_url = "https://pcp-comandos-he.pcp.desenv.bb.com.br/run/run-jobs-status"
+        # headers = {
+        #     "Authorization": f"Bearer {access_token}",
+        #     "accept": "application/json",
+        #     "Content-Type": "application/json"
+        # }
+        #
+        # # Fazer a requisição para a API Control-M Services
+        # response = requests.post(api_url, headers=headers, json=request.dict(), verify=False)
+        # if response.status_code != 200:
+        #     raise HTTPException(status_code=response.status_code, detail="Erro ao acessar a API Control-M Services")
 
-        # Configurações da API Control-M Services
-        api_url = "https://pcp-comandos-he.pcp.desenv.bb.com.br/run/run-jobs-status"
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "accept": "application/json",
-            "Content-Type": "application/json"
-        }
-
-        # Fazer a requisição para a API Control-M Services
-        response = requests.post(api_url, headers=headers, json=request.dict(), verify=False)
-        if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail="Erro ao acessar a API Control-M Services")
-
-        jobs_data = response.json().get("data", {}).get("statuses", [])
+        # jobs_data = response.json().get("data", {}).get("statuses", [])
+        # Carregar dados dos jobs do arquivo JSON
+        jobs_data = load_jobs_data()
 
         # Conectar ao banco de dados
         db_config = {
@@ -114,7 +124,6 @@ async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
         # Preparar dados para inserção na tabela JOB_EXEA_CTM
         job_exea_ctm_data = []
         for job in jobs_data:
-            print(f'id_job {json.dumps(job, indent=4)}')
             for sch_job in sch_agdd_data:
                 if (
                         job['ctm'] == sch_job['nm_svdr'] and

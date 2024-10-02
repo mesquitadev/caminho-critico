@@ -35,20 +35,23 @@ class CaminhoCriticoRepository:
                     'stopwatch' AS icon,
                     '#377' AS color,
                     COALESCE(tej.nm_est_job, 'não schedulado') AS mainstat,
-                    sa.idfr_sch AS id, 
+                    sa.idfr_sch AS id,
                     sa.nm_mbr AS member_name,
-                    sa.sub_apl AS sub_appl, 
-                    sa.pas_pai AS pasta, 
+                    sa.sub_apl AS sub_appl,
+                    sa.pas_pai AS pasta,
                     sa.nm_svdr AS ambiente,
                     je.idfr_exea AS orderid,
                     je.nr_exea AS run_number,
-                    je.dt_mvt AS odate
+                    TO_CHAR(je.dt_mvt, 'YYYY-MM-DD') AS odate
                 FROM batch.sch_agdd sa
                 LEFT JOIN batch.job_exea_ctm je ON sa.idfr_sch = je.idfr_sch
                 LEFT JOIN batch.tip_est_job tej ON je.idfr_est_job = tej.idfr_est_job
                 WHERE sa.idfr_sch IN %s
             """
-            cursor.execute(query, (tuple(node_ids)))
+            # Ensure node_ids is a tuple
+            if not isinstance(node_ids, tuple):
+                node_ids = tuple(node_ids)
+            cursor.execute(query, (node_ids,))
             return cursor.fetchall()
 
     def fetch_edges(self, node_ids):

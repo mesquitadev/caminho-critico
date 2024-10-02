@@ -1,4 +1,5 @@
 import os
+import traceback
 from datetime import datetime, date
 
 from fastapi import APIRouter, HTTPException
@@ -111,7 +112,10 @@ def processar_dados_retornar_json(rotina_inicial: str, rotina_destino: str):
 
             def format_order_date(order_date):
                 if isinstance(order_date, str):
-                    return datetime.strptime(order_date, '%y%m%d').strftime('%Y-%m-%d')
+                    try:
+                        return datetime.strptime(order_date, '%Y-%m-%d').strftime('%Y-%m-%d')
+                    except ValueError:
+                        return datetime.strptime(order_date, '%y%m%d').strftime('%Y-%m-%d')
                 elif isinstance(order_date, (datetime, date)):
                     return order_date.strftime('%Y-%m-%d')
                 else:
@@ -156,4 +160,8 @@ def processar_dados_retornar_json(rotina_inicial: str, rotina_destino: str):
 
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro: {str(e)}")
+        error_message = {
+            "error": str(e),
+            "trace": traceback.format_exc()
+        }
+        raise HTTPException(status_code=500, detail=json.dumps(error_message, indent=4))
