@@ -117,14 +117,20 @@ def processar_dados_retornar_json(rotina_inicial: str, rotina_destino: str):
                 else:
                     raise ValueError("order_date must be a string, datetime, or date object")
 
+            def limpa_campos(field_value):
+                if isinstance(field_value, str):
+                    return field_value.strip()
+                else:
+                    return str(field_value)
+
             result = {
                 'nodes': [
                     {
-                        'id': str(node['id']).strip() if isinstance(node['id'], str) else str(node['id']),
-                        'title': f"{node['member_name'].strip() if isinstance(node['member_name'], str) else node['member_name']} - {node['sub_appl'].strip() if isinstance(node['sub_appl'], str) else node['sub_appl']}",
-                        'mainStat': node['mainstat'].strip() if isinstance(node['mainstat'], str) else node['mainstat'],
-                        'subTitle': f"{node['ambiente'].strip() if isinstance(node['ambiente'], str) else node['ambiente']}:{str(node['orderid']).strip() if isinstance(node['orderid'], str) else str(node['orderid'])}",
-                        'detail__pasta': node['pasta'].strip() if isinstance(node['pasta'], str) else node['pasta'],
+                        'id': limpa_campos(node['id']),
+                        'title': f"{limpa_campos(node['member_name'])} - {limpa_campos(node['sub_appl'])}",
+                        'mainStat': limpa_campos(node['mainstat']),
+                        'subTitle': f"{limpa_campos(node['ambiente'])}:{limpa_campos(node['orderid'])}",
+                        'detail__pasta': limpa_campos(node['pasta']),
                         'detail__run_number': node['run_number'],
                         'detail__odate': format_order_date(node['odate']),
                         'icon': map_mainstat_to_color_icon(node['mainstat'])['icon'],

@@ -48,7 +48,7 @@ class CaminhoCriticoRepository:
                 LEFT JOIN batch.tip_est_job tej ON je.idfr_est_job = tej.idfr_est_job
                 WHERE sa.idfr_sch IN %s
             """
-            cursor.execute(query, (tuple(node_ids),))
+            cursor.execute(query, (tuple(node_ids)))
             return cursor.fetchall()
 
     def fetch_edges(self, node_ids):
