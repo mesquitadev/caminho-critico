@@ -2,6 +2,7 @@ import threading
 import time
 import networkx as nx
 import csv
+from datetime import datetime, date
 
 
 def read_csv_file(file_name, delimiter=','):
@@ -19,7 +20,7 @@ def worker(grafo, records, start, end):
         grafo.add_edge(origem, destino)
 
 
-def construir_grafo(records, num_threads=4):
+def construir_grafo(records, num_threads=6):
     print('Construindo grafo...')
     start_time = time.time()
 
@@ -77,3 +78,51 @@ def remover_repetidos(caminhos):
     for caminho in caminhos:
         caminhos_unicos.add(tuple(caminho))
     return [list(caminho) for caminho in caminhos_unicos]
+
+
+def limpa_campos(field_value):
+    if isinstance(field_value, str):
+        return field_value.strip()
+    else:
+        return str(field_value)
+
+
+def format_order_date(order_date):
+    if not order_date:
+        return ''
+    if isinstance(order_date, str):
+        try:
+            return datetime.strptime(order_date, '%Y-%m-%d').strftime('%Y-%m-%d')
+        except ValueError:
+            return datetime.strptime(order_date, '%y%m%d').strftime('%Y-%m-%d')
+    elif isinstance(order_date, (datetime, date)):
+        return order_date.strftime('%Y-%m-%d')
+    else:
+        raise ValueError("order_date must be a string, datetime, or date object")
+
+
+def map_mainstat_to_color_icon(mainstat):
+    mapping = {
+        'Executing': {'color': '#995', 'icon': 'spinner'},
+        'Ended Ok': {'color': '#250', 'icon': 'check-circle'},
+        'Abended': {'color': '#500', 'icon': 'bug'},
+        'Status unknown': {'color': '#377', 'icon': 'question-circle'},
+        'Disappeared': {'color': '#377', 'icon': 'question-circle'},
+        'Não encontrado': {'color': '#377', 'icon': 'sync-slash'},
+        'não schedulado': {'color': '#377', 'icon': 'sync-slash'}
+    }
+    return mapping.get(mainstat, {'color': '#377', 'icon': 'stopwatch'})
+
+
+status_mapping = {
+    "Ended OK": 7,
+    "Ended Not OK": 8,
+    "Wait User": 12,
+    "Wait resource": 13,
+    "Wait host": 14,
+    "Wait workload": 15,
+    "Wait Condition": 2,
+    "Executing": 4,
+    "Status unknown": 16,
+    "Desconhecido": 0
+}

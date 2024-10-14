@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 
 from pydantic import BaseModel
 
-from sgs_caminho_critico.repository.CaminhoCriticoRepository import CaminhoCriticoRepository
+from sgs_caminho_critico.repository.JobsRepository import JobsRepository
+from sgs_caminho_critico.utils import status_mapping
 
 # Desabilitar avisos de certificado SSL
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -25,8 +26,8 @@ def authenticate():
     auth_url = "https://pcp-comandos-he.pcp.desenv.bb.com.br/login/token"
     auth_data = {
         "grant_type": "",
-        "username": "Magic",
-        "password": "magic",
+        "username": os.getenv('CONTROL_M_SERVICES_USERNAME'),
+        "password": os.getenv('CONTROL_M_SERVICES_PASSWORD'),
         "scope": "",
         "client_id": "",
         "client_secret": ""
@@ -50,20 +51,6 @@ def get_token():
     return token
 
 
-status_mapping = {
-    "Ended OK": 7,
-    "Ended Not OK": 8,
-    "Wait User": 12,
-    "Wait resource": 13,
-    "Wait host": 14,
-    "Wait workload": 15,
-    "Wait Condition": 2,
-    "Executing": 4,
-    "Status unknown": 16,
-    "Desconhecido": 0
-}
-
-
 class JobStatusRequest(BaseModel):
     jobname: str
     keyBB: str
@@ -74,7 +61,7 @@ class JobStatusRequest(BaseModel):
 
 
 def load_jobs_data():
-    json_file_path = os.path.join(os.getcwd(), 'res.json')
+    json_file_path = os.path.join(os.getcwd(), 'res2.json')
     print(f'json_file_path {json_file_path}')
     with open(json_file_path, 'r') as file:
         data = json.load(file)
@@ -84,36 +71,27 @@ def load_jobs_data():
 @jobs_router.post("/update-status", response_model=dict, response_description="Captura e atualiza o status dos jobs")
 async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
     try:
-        # # Obter o token atualizado
-        # access_token = get_token()
-        #
-        # # Configurações da API Control-M Services
-        # api_url = "https://pcp-comandos-he.pcp.desenv.bb.com.br/run/run-jobs-status"
-        # headers = {
-        #     "Authorization": f"Bearer {access_token}",
-        #     "accept": "application/json",
-        #     "Content-Type": "application/json"
-        # }
-        #
-        # # Fazer a requisição para a API Control-M Services
-        # response = requests.post(api_url, headers=headers, json=request.dict(), verify=False)
-        # if response.status_code != 200:
-        #     raise HTTPException(status_code=response.status_code, detail="Erro ao acessar a API Control-M Services")
+        # Obter o token atualizado
+        access_token = get_token()
 
-        # jobs_data = response.json().get("data", {}).get("statuses", [])
-        # Carregar dados dos jobs do arquivo JSON
-        jobs_data = load_jobs_data()
-
-        # Conectar ao banco de dados
-        db_config = {
-            'dbname': 'pcp',
-            'user': 'user_gprom63',
-            'password': 'magic123',
-            'host': 'silo01.postgresql.bdh.desenv.bb.com.br',
-            'port': '5432'
+        # Configurações da API Control-M Services
+        api_url = os.getenv('CONTROL_M_SERVICES_API_URL')
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "accept": "application/json",
+            "Content-Type": "application/json"
         }
-        repo = CaminhoCriticoRepository(**db_config)
-        repo.connect()
+
+        # Fazer a requisição para a API Control-M Services
+        response = requests.post(api_url, headers=headers, json=request.dict(), verify=False)
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail="Erro ao acessar a API Control-M Services")
+
+        jobs_data = response.json().get("data", {}).get("statuses", [])
+        # Carregar dados dos jobs do arquivo JSON
+        # jobs_data = load_jobs_data()
+
+        repo = JobsRepository()
 
         # Buscar IDs dos jobs na tabela SCH_AGDD
         sch_agdd_data = repo.fetch_sch_agdd_data()
@@ -170,8 +148,6 @@ async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
         # Insert new and updated records
         if records_to_insert or records_to_update:
             repo.insert_job_exea_ctm_data(records_to_insert + records_to_update)
-
-        repo.disconnect()
 
         return {"status": "success", "message": "Dados dos jobs atualizados com sucesso",
                 "updated_jobs": job_exea_ctm_data}
