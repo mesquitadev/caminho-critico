@@ -82,21 +82,21 @@ class JobsRepository:
             logging.info(f'Arquivo {csv_file_path} apagado antes de atualizar.')
 
         query = text("""
-            SELECT 
-                je.idfr_sch, 
+            SELECT
+                je.idfr_sch,
                 je.idfr_job_exct
-            FROM 
+            FROM
                 batch.job_exct je
             UNION ALL
-            SELECT 
-                sccs.idfr_sch, 
+            SELECT
+                sccs.idfr_sch,
                 scce.idfr_sch
-            FROM 
+            FROM
                 batch.sch_crlc_cnd_said sccs
-            INNER JOIN 
-                batch.sch_crlc_cnd_entd scce 
+            INNER JOIN
+                batch.sch_crlc_cnd_entd scce
                 ON sccs.idfr_cnd = scce.idfr_cnd
-            INNER JOIN batch.cnd c 
+            INNER JOIN batch.cnd c
                 ON sccs.idfr_cnd = c.idfr_cnd
             WHERE sccs.cmdo_cnd = 'A'
         """)
