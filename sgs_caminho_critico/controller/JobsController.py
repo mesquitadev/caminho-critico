@@ -23,7 +23,7 @@ token_expiration = None
 
 def authenticate():
     global token, token_expiration
-    auth_url = "https://pcp-comandos-he.pcp.desenv.bb.com.br/login/token"
+    auth_url = f"{os.getenv('CONTROL_M_SERVICES_API_URL')}/login/token"
     auth_data = {
         "grant_type": "",
         "username": os.getenv('CONTROL_M_SERVICES_USERNAME'),
@@ -75,7 +75,7 @@ async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
         access_token = get_token()
 
         # Configurações da API Control-M Services
-        api_url = os.getenv('CONTROL_M_SERVICES_API_URL')
+        api_url = f"{os.getenv('CONTROL_M_SERVICES_API_URL')}/run/run-jobs-status"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "accept": "application/json",
