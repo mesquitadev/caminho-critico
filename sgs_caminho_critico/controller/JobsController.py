@@ -18,7 +18,7 @@ jobs_router = APIRouter()
 
 # Variáveis globais para armazenar o token e a hora da autenticação
 token = None
-token_expiration = None
+token_expiration = datetime.min
 
 
 def authenticate():
@@ -46,7 +46,7 @@ def authenticate():
 
 def get_token():
     global token, token_expiration
-    if token is None or datetime.now() >= token_expiration:
+    if token is None or token_expiration is None or datetime.now() >= token_expiration:
         authenticate()
     return token
 
@@ -104,8 +104,8 @@ async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
         for job in jobs_data:
             for sch_job in sch_agdd_data:
                 if (
+                        (job['folder'] in ['UNKNWN', 'DUMMY'] or job['folder'] == sch_job['pas_pai']) and
                         job['ctm'] == sch_job['nm_svdr'] and
-                        job['folder'] == sch_job['pas_pai'] and
                         job['name'] == sch_job['nm_mbr'] and
                         job['subApplication'] == sch_job['sub_apl']):
                     job_exea_ctm_data.append({
@@ -123,6 +123,8 @@ async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
 
         # Fetch existing records from the database
         existing_records = repo.fetch_existing_job_exea_ctm_data([job['idfr_sch'] for job in job_exea_ctm_data])
+        # Convert existing records to dictionaries
+        existing_records_dicts = [dict(record._mapping) for record in existing_records]
 
         # Prepare data for insertion, update, or deletion
         records_to_insert = []
@@ -130,7 +132,7 @@ async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
 
         for new_job in job_exea_ctm_data:
             match_found = False
-            for existing_job in existing_records:
+            for existing_job in existing_records_dicts:
                 if (new_job['idfr_sch'] == existing_job['idfr_sch'] and
                         new_job['idfr_exea'] == existing_job['idfr_exea']):
                     match_found = True

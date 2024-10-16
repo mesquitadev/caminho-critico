@@ -155,6 +155,8 @@ class JobsRepository:
         self.db.commit()
 
     def fetch_existing_job_exea_ctm_data(self, idfr_sch_list):
+        if not idfr_sch_list:
+            return []
         query = text("""
             SELECT
                 idfr_sch,
@@ -167,12 +169,14 @@ class JobsRepository:
                 idfr_sch IN :idfr_sch_list
         """)
         result = self.db.execute(query, {'idfr_sch_list': tuple(idfr_sch_list)})
-        return [dict(row._mapping) for row in result]
+        return result.fetchall()
 
     def delete_job_exea_ctm_data(self, idfr_sch_list):
         query = text("""
-        DELETE FROM batch.job_exea_ctm
-        WHERE idfr_sch IN :idfr_sch_list
+            DELETE FROM
+                batch.job_exea_ctm
+            WHERE
+                idfr_sch IN :idfr_sch_list
         """)
         self.db.execute(query, {'idfr_sch_list': tuple(idfr_sch_list)})
         self.db.commit()
