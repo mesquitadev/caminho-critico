@@ -43,10 +43,12 @@ class GraphService:
                             'mainStat': limpa_campos(node['mainstat']),
                             'subTitle': f"{limpa_campos(node['ambiente'])}:{limpa_campos(node['orderid'])}",
                             'detail__pasta': limpa_campos(node['pasta']),
-                            'detail__run_number': node['run_number'],
+                            'detail__runnumber': node['run_number'],
                             'detail__odate': format_order_date(node['odate']),
-                            'icon': map_mainstat_to_color_icon(node['mainstat'])['icon'],
-                            'color': map_mainstat_to_color_icon(node['mainstat'])['color'],
+                            'detail__held': limpa_campos(node['held']),
+                            'detail__deleted': limpa_campos(node['deleted']),
+                            'icon': map_mainstat_to_color_icon(node['mainstat'], node['held'], node['deleted'])['icon'],
+                            'color': map_mainstat_to_color_icon(node['mainstat'], node['held'], node['deleted'])['color'],
                         } for node in nodes_data
                     ],
                     'edges': [

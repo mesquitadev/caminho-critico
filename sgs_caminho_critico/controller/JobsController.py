@@ -120,15 +120,16 @@ async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
                         'idfr_est_job': status_mapping.get(job['status'], 0),
                         'dt_atl': datetime.now().isoformat()
                     })
+        print(f'job_exea_ctm_data {job_exea_ctm_data}')
 
         # Fetch existing records from the database
         existing_records = repo.fetch_existing_job_exea_ctm_data([job['idfr_sch'] for job in job_exea_ctm_data])
         # Convert existing records to dictionaries
         existing_records_dicts = [dict(record._mapping) for record in existing_records]
 
-        # Prepare data for insertion, update, or deletion
+        # Prepare data for deletion and insertion
+        records_to_delete = []
         records_to_insert = []
-        records_to_update = []
 
         for new_job in job_exea_ctm_data:
             match_found = False
@@ -136,20 +137,19 @@ async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
                 if (new_job['idfr_sch'] == existing_job['idfr_sch'] and
                         new_job['idfr_exea'] == existing_job['idfr_exea']):
                     match_found = True
-                    if (new_job['nr_exea'] != existing_job['nr_exea']
-                            or new_job['idfr_est_job'] != existing_job['idfr_est_job']):
-                        records_to_update.append(new_job)
+                    records_to_delete.append(existing_job)
+                    records_to_insert.append(new_job)
                     break
             if not match_found:
                 records_to_insert.append(new_job)
 
-        # Delete records that need to be updated
-        if records_to_update:
-            repo.delete_job_exea_ctm_data([job['idfr_sch'] for job in records_to_update])
+        # Delete existing records
+        if records_to_delete:
+            repo.delete_job_exea_ctm_data([job['idfr_sch'] for job in records_to_delete])
 
-        # Insert new and updated records
-        if records_to_insert or records_to_update:
-            repo.insert_job_exea_ctm_data(records_to_insert + records_to_update)
+        # Insert new records
+        if records_to_insert:
+            repo.insert_job_exea_ctm_data(records_to_insert)
 
         return {"status": "success", "message": "Dados dos jobs atualizados com sucesso",
                 "updated_jobs": job_exea_ctm_data}

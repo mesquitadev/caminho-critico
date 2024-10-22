@@ -23,6 +23,8 @@ class JobsRepository:
                 sa.nm_svdr AS ambiente,
                 je.idfr_exea AS orderid,
                 je.nr_exea AS run_number,
+                je.est_jobh AS held,
+                je.est_excd AS deleted,
                 COALESCE(TO_CHAR(je.dt_mvt, 'YYYY-MM-DD'), '') AS odate
             FROM batch.sch_agdd sa
             LEFT JOIN batch.job_exea_ctm je ON sa.idfr_sch = je.idfr_sch

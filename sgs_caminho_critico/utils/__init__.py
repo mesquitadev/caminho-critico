@@ -101,17 +101,22 @@ def format_order_date(order_date):
         raise ValueError("order_date must be a string, datetime, or date object")
 
 
-def map_mainstat_to_color_icon(mainstat):
+def map_mainstat_to_color_icon(mainstat, est_jobh, est_excd):
+    if est_excd  and mainstat != 'Ended Ok':
+        return {'color': '#900', 'icon': 'times-circle'}
+    if est_jobh and mainstat != 'Ended Ok':
+        return {'color': '#900', 'icon': 'lock'}
+
     mapping = {
-        'Executing': {'color': '#995', 'icon': 'spinner'},
-        'Ended Ok': {'color': '#250', 'icon': 'check-circle'},
-        'Abended': {'color': '#500', 'icon': 'bug'},
-        'Status unknown': {'color': '#377', 'icon': 'question-circle'},
-        'Disappeared': {'color': '#377', 'icon': 'question-circle'},
-        'Não encontrado': {'color': '#377', 'icon': 'sync-slash'},
-        'não schedulado': {'color': '#377', 'icon': 'sync-slash'}
+        'Executing': {'color': '#990', 'icon': 'spinner'},
+        'Ended Ok': {'color': '#090', 'icon': 'check-circle'},
+        'Abended': {'color': '#900', 'icon': 'bug'},
+        'Status unknown': {'color': '#379', 'icon': 'question-circle'},
+        'Disappeared': {'color': '#500', 'icon': 'question-circle'},
+        'Não encontrado': {'color': '#779', 'icon': 'sync-slash'},
+        'não schedulado': {'color': '#779', 'icon': 'sync-slash'}
     }
-    return mapping.get(mainstat, {'color': '#377', 'icon': 'stopwatch'})
+    return mapping.get(mainstat, {'color': '#379', 'icon': 'stopwatch'})
 
 
 status_mapping = {
