@@ -102,7 +102,7 @@ def format_order_date(order_date):
 
 
 def map_mainstat_to_color_icon(mainstat, est_jobh, est_excd):
-    if est_excd  and mainstat != 'Ended Ok':
+    if est_excd and mainstat != 'Ended Ok':
         return {'color': '#900', 'icon': 'times-circle'}
     if est_jobh and mainstat != 'Ended Ok':
         return {'color': '#900', 'icon': 'lock'}
