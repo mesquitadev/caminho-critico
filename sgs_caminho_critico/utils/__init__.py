@@ -1,8 +1,13 @@
+import os
 import threading
 import time
 import networkx as nx
 import csv
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+
+import requests
+import urllib3
+from fastapi import HTTPException
 
 
 def read_csv_file(file_name, delimiter=','):
@@ -131,3 +136,41 @@ status_mapping = {
     "Status unknown": 16,
     "Desconhecido": 0
 }
+
+
+# Desabilitar avisos de certificado SSL
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# Variáveis globais para armazenar o token e a hora da autenticação
+token = None
+token_expiration = datetime.min
+
+
+def authenticate():
+    global token, token_expiration
+    auth_url = f"{os.getenv('CONTROL_M_SERVICES_API_URL')}/login/token"
+    auth_data = {
+        "grant_type": "",
+        "username": os.getenv('CONTROL_M_SERVICES_USERNAME'),
+        "password": os.getenv('CONTROL_M_SERVICES_PASSWORD'),
+        "scope": "",
+        "client_id": "",
+        "client_secret": ""
+    }
+    headers = {
+        "accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    response = requests.post(auth_url, headers=headers, data=auth_data, verify=False)
+    if response.status_code == 200:
+        token = response.json().get("access_token")
+        token_expiration = datetime.now() + timedelta(minutes=30)
+    else:
+        raise HTTPException(status_code=response.status_code, detail="Erro ao autenticar na API do PCP")
+
+
+def get_pcp_token():
+    global token, token_expiration
+    if token is None or token_expiration is None or datetime.now() >= token_expiration:
+        authenticate()
+    return token

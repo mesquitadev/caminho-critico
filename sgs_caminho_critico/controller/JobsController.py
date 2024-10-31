@@ -1,54 +1,16 @@
 import json
 import os
 import traceback
-import urllib3
 from fastapi import APIRouter, HTTPException
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from pydantic import BaseModel
 
 from sgs_caminho_critico.repository.JobsRepository import JobsRepository
-from sgs_caminho_critico.utils import status_mapping
-
-# Desabilitar avisos de certificado SSL
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from sgs_caminho_critico.utils import status_mapping, get_pcp_token
 
 jobs_router = APIRouter()
-
-# Variáveis globais para armazenar o token e a hora da autenticação
-token = None
-token_expiration = datetime.min
-
-
-def authenticate():
-    global token, token_expiration
-    auth_url = f"{os.getenv('CONTROL_M_SERVICES_API_URL')}/login/token"
-    auth_data = {
-        "grant_type": "",
-        "username": os.getenv('CONTROL_M_SERVICES_USERNAME'),
-        "password": os.getenv('CONTROL_M_SERVICES_PASSWORD'),
-        "scope": "",
-        "client_id": "",
-        "client_secret": ""
-    }
-    headers = {
-        "accept": "application/json",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-    response = requests.post(auth_url, headers=headers, data=auth_data, verify=False)
-    if response.status_code == 200:
-        token = response.json().get("access_token")
-        token_expiration = datetime.now() + timedelta(minutes=30)
-    else:
-        raise HTTPException(status_code=response.status_code, detail="Erro ao autenticar na API do PCP")
-
-
-def get_token():
-    global token, token_expiration
-    if token is None or token_expiration is None or datetime.now() >= token_expiration:
-        authenticate()
-    return token
 
 
 class JobStatusRequest(BaseModel):
@@ -72,8 +34,8 @@ def load_jobs_data():
 async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
     try:
         # Obter o token atualizado
-        access_token = get_token()
-
+        access_token = get_pcp_token()
+        print(f"token {access_token}")
         # Configurações da API Control-M Services
         api_url = f"{os.getenv('CONTROL_M_SERVICES_API_URL')}/run/run-jobs-status"
         headers = {
@@ -118,7 +80,9 @@ async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
                         'est_jobh': job['held'],
                         'est_excd': job['deleted'],
                         'idfr_est_job': status_mapping.get(job['status'], 0),
-                        'dt_atl': datetime.now().isoformat()
+                        'dt_atl': datetime.now().isoformat(),
+                        'hr_inc_exea_job': job.get('startTime', ''),
+                        'hr_fim_exea_job': job.get('endTime', '')
                     })
         print(f'job_exea_ctm_data {job_exea_ctm_data}')
 

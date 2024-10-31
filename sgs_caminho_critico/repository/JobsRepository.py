@@ -1,6 +1,8 @@
 import csv
 import os
 import logging
+from datetime import datetime
+
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from sgs_caminho_critico.config.Database import SessionLocal
@@ -139,7 +141,9 @@ class JobsRepository:
             est_jobh,
             est_excd,
             idfr_est_job,
-            dt_atl
+            dt_atl,
+            hr_inc_exea_job,
+            hr_fim_exea_job
         ) VALUES (
             :idfr_sch,
             :idfr_exea,
@@ -150,7 +154,9 @@ class JobsRepository:
             :est_jobh,
             :est_excd,
             :idfr_est_job,
-            :dt_atl
+            :dt_atl,
+            :hr_inc_exea_job,
+            :hr_fim_exea_job
         )
         """)
         self.db.execute(query, job_exea_ctm_data)
@@ -181,4 +187,157 @@ class JobsRepository:
                 idfr_sch IN :idfr_sch_list
         """)
         self.db.execute(query, {'idfr_sch_list': tuple(idfr_sch_list)})
+        self.db.commit()
+
+    def buscar_fluxos(self):
+        query = text("""
+            SELECT
+                idfr_flx_rtin_bch,
+                idfr_sch_inc_flx,
+                idfr_sch_fim_flx
+            FROM
+                batch.CAD_FLX_RTIN_BCH
+        """)
+        result = self.db.execute(query)
+        return result.fetchall()
+
+    def update_obs_job(self, orderid, obs):
+        query = text("""
+            UPDATE batch.job_exea_ctm
+            SET obs_job = :obs
+            WHERE idfr_exea = CAST(:orderid AS VARCHAR)
+        """)
+        self.db.execute(query, {'obs': obs, 'orderid': orderid})
+        self.db.commit()
+
+    def update_status_fluxo(self, id_fluxo, idfr_est_flx, start_timestamp, end_timestamp):
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # Check if the record exists
+        check_query = text("""
+            SELECT COUNT(*)
+            FROM batch.ACPT_EXEA_FLX
+            WHERE idfr_flx_rtin_bch = :idfr_flx_rtin_bch
+            AND dt_inc_flx = :dt_inc_flx
+        """)
+
+        record_exists = self.db.execute(check_query, {
+            'idfr_flx_rtin_bch': id_fluxo,
+            'dt_inc_flx': current_date
+        }).scalar()
+
+        # Update if exists, otherwise insert
+        if record_exists:
+            update_query = text("""
+                UPDATE batch.ACPT_EXEA_FLX
+                SET
+                    hr_inc_exea_flx = :hr_inc_exea_flx,
+                    hr_fim_exea_flx = :hr_fim_exea_flx,
+                    idfr_est_flx = :idfr_est_flx,
+                    est_ati = 'true',
+                    ts_ult_atl = :ts_ult_atl
+                WHERE
+                    idfr_flx_rtin_bch = :idfr_flx_rtin_bch
+                    AND dt_inc_flx = :dt_inc_flx
+            """)
+            self.db.execute(update_query, {
+                'idfr_flx_rtin_bch': id_fluxo,
+                'dt_inc_flx': current_date,
+                'hr_inc_exea_flx': start_timestamp,
+                'hr_fim_exea_flx': end_timestamp,
+                'idfr_est_flx': idfr_est_flx,
+                'ts_ult_atl': current_timestamp
+            })
+        else:
+            insert_query = text("""
+                INSERT INTO batch.ACPT_EXEA_FLX (
+                    idfr_flx_rtin_bch,
+                    idfr_exea_flx,
+                    idfr_est_flx,
+                    in_atr,
+                    dt_inc_flx,
+                    hr_inc_exea_flx,
+                    hr_fim_exea_flx,
+                    est_ati,
+                    ts_ult_atl
+                ) VALUES (
+                    :idfr_flx_rtin_bch,
+                    DEFAULT,
+                    :idfr_est_flx,
+                    'false',
+                    :dt_inc_flx,
+                    :hr_inc_exea_flx,
+                    :hr_fim_exea_flx,
+                    'true',
+                    :ts_ult_atl
+                )
+            """)
+            self.db.execute(insert_query, {
+                'idfr_flx_rtin_bch': id_fluxo,
+                'dt_inc_flx': current_date,
+                'idfr_est_flx': idfr_est_flx,
+                'hr_inc_exea_flx': start_timestamp,
+                'hr_fim_exea_flx': end_timestamp,
+                'ts_ult_atl': current_timestamp
+            })
+
+        self.db.commit()
+
+        select_query = text("""
+            SELECT idfr_exea_flx
+            FROM batch.ACPT_EXEA_FLX
+            WHERE idfr_flx_rtin_bch = :idfr_flx_rtin_bch
+            ORDER BY ts_ult_atl DESC
+            LIMIT 1
+        """)
+
+        result = self.db.execute(select_query, {'idfr_flx_rtin_bch': id_fluxo})
+        return result.fetchone()
+
+    def insert_obs_acpt_exea_flx(self, idfr_flx_rtin_bch, idfr_exea_flx, obs_flx):
+        # Check if the record exists
+        check_query = text("""
+            SELECT COUNT(*)
+            FROM batch.OBS_ACPT_EXEA_FLX
+            WHERE idfr_flx_rtin_bch = :idfr_flx_rtin_bch
+            AND idfr_exea_flx = :idfr_exea_flx
+        """)
+
+        record_exists = self.db.execute(check_query, {
+            'idfr_flx_rtin_bch': idfr_flx_rtin_bch,
+            'idfr_exea_flx': idfr_exea_flx
+        }).scalar()
+
+        # Update if exists, otherwise insert
+        if record_exists:
+            update_query = text("""
+                UPDATE batch.OBS_ACPT_EXEA_FLX
+                SET obs_flx = :obs_flx
+                WHERE idfr_flx_rtin_bch = :idfr_flx_rtin_bch
+                AND idfr_exea_flx = :idfr_exea_flx
+            """)
+            self.db.execute(update_query, {
+                'idfr_flx_rtin_bch': idfr_flx_rtin_bch,
+                'idfr_exea_flx': idfr_exea_flx,
+                'obs_flx': obs_flx
+            })
+        else:
+            insert_query = text("""
+                INSERT INTO batch.OBS_ACPT_EXEA_FLX (
+                    idfr_flx_rtin_bch,
+                    idfr_exea_flx,
+                    obs_flx
+                ) VALUES (
+                    :idfr_flx_rtin_bch,
+                    :idfr_exea_flx,
+                    :obs_flx
+                )
+            """)
+            self.db.execute(insert_query, {
+                'idfr_flx_rtin_bch': idfr_flx_rtin_bch,
+                'idfr_exea_flx': idfr_exea_flx,
+                'obs_flx': obs_flx
+            })
+
         self.db.commit()
