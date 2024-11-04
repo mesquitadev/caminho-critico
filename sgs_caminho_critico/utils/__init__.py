@@ -1,3 +1,4 @@
+import json
 import os
 import threading
 import time
@@ -106,6 +107,19 @@ def format_order_date(order_date):
         raise ValueError("order_date must be a string, datetime, or date object")
 
 
+def format_timestamp(timestamp):
+    if not timestamp:
+        return ''
+    if isinstance(timestamp, str):
+        try:
+            return datetime.strptime(timestamp, '%Y%m%d%H%M%S').strftime('%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            return datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+    elif isinstance(timestamp, datetime):
+        return timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        raise ValueError("timestamp must be a string or datetime object")
+
 def map_mainstat_to_color_icon(mainstat, est_jobh, est_excd):
     if est_excd and mainstat != 'Ended Ok':
         return {'color': '#900', 'icon': 'times-circle'}
@@ -136,7 +150,6 @@ status_mapping = {
     "Status unknown": 16,
     "Desconhecido": 0
 }
-
 
 # Desabilitar avisos de certificado SSL
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -174,3 +187,76 @@ def get_pcp_token():
     if token is None or token_expiration is None or datetime.now() >= token_expiration:
         authenticate()
     return token
+
+
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        return super().default(obj)
+
+
+def set_node_status(nodes_data, edges_data):
+    for edge in edges_data:
+        target_node = next((node for node in nodes_data if node['id'] == edge['target']), None)
+        if target_node and target_node.get('end_time') is not None:
+            return 1  # Finalizado
+
+        source_node = next((node for node in nodes_data if node['id'] == edge['source']), None)
+        if source_node and source_node.get('start_time') is not None:
+            return 3  # Em execução
+
+    return 2  # Aguardando início
+
+
+def get_next_nodes(nodes_data, edges_data):
+    ended_ok_nodes = [node for node in nodes_data if node.get('mainstat') == 'Ended Ok']
+
+    if not ended_ok_nodes:
+        nodes_with_predecessors = {edge['target'] for edge in edges_data}
+        nodes_without_predecessors = [node for node in nodes_data if node['id'] not in nodes_with_predecessors]
+        return {"nodes": nodes_without_predecessors}
+
+    next_nodes = []
+    added_node_ids = set()
+    for node in ended_ok_nodes:
+        successors = [edge['target'] for edge in edges_data if edge['source'] == node['id']]
+        for successor in successors:
+            if successor not in added_node_ids:
+                next_node = next((n for n in nodes_data if n['id'] == successor and n.get('mainstat') != 'Ended Ok'),
+                                 None)
+                if next_node:
+                    next_nodes.append(next_node)
+                    added_node_ids.add(successor)
+
+    mapped_nodes = [
+        {
+            'id': limpa_campos(node['id']),
+            'title': f"{limpa_campos(node['member_name'])} - {limpa_campos(node['sub_appl'])}",
+            'mainStat': limpa_campos(node['mainstat']),
+            'subTitle': f"{limpa_campos(node['ambiente'])}:{limpa_campos(node['orderid'])}",
+            'detail__pasta': limpa_campos(node['pasta']),
+            'detail__runnumber': node['run_number'],
+            'detail__odate': format_order_date(node['odate']),
+            'detail__held': limpa_campos(node['held']),
+            'detail__deleted': limpa_campos(node['deleted']),
+            'icon': map_mainstat_to_color_icon(node['mainstat'], node['held'], node['deleted'])['icon'],
+            'color': map_mainstat_to_color_icon(node['mainstat'], node['held'], node['deleted'])['color'],
+            'start_time': format_timestamp(node['start_time']),
+            'end_time': format_timestamp(node['end_time'])
+        } for node in next_nodes
+    ]
+
+    return {"nodes": mapped_nodes}
+
+
+def map_status(idfr_est_flx):
+    if idfr_est_flx == 2:
+        return "Aguardando Inicio"
+    elif idfr_est_flx == 3:
+        return "Em execução"
+    elif idfr_est_flx == 1:
+        return "Finalizado"
+    else:
+        return "Status desconhecido"
+

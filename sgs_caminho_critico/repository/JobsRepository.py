@@ -27,6 +27,8 @@ class JobsRepository:
                 je.nr_exea AS run_number,
                 je.est_jobh AS held,
                 je.est_excd AS deleted,
+                je.hr_inc_exea_job AS start_time,
+                je.hr_fim_exea_job AS end_time,
                 COALESCE(TO_CHAR(je.dt_mvt, 'YYYY-MM-DD'), '') AS odate
             FROM batch.sch_agdd sa
             LEFT JOIN batch.job_exea_ctm je ON sa.idfr_sch = je.idfr_sch
@@ -210,7 +212,8 @@ class JobsRepository:
         self.db.execute(query, {'obs': obs, 'orderid': orderid})
         self.db.commit()
 
-    def update_status_fluxo(self, id_fluxo, idfr_est_flx, start_timestamp, end_timestamp):
+    def update_status_fluxo(self, id_fluxo, idfr_est_flx, start_timestamp, end_timestamp, est_abn_flx, est_excd_flx,
+                            est_jobh_flx):
         current_date = datetime.now().strftime('%Y-%m-%d')
         current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -235,6 +238,9 @@ class JobsRepository:
                     hr_inc_exea_flx = :hr_inc_exea_flx,
                     hr_fim_exea_flx = :hr_fim_exea_flx,
                     idfr_est_flx = :idfr_est_flx,
+                    est_abn_flx = :est_abn_flx,
+                    est_excd_flx = :est_excd_flx,
+                    est_jobh_flx = :est_jobh_flx,
                     est_ati = 'true',
                     ts_ult_atl = :ts_ult_atl
                 WHERE
@@ -247,6 +253,9 @@ class JobsRepository:
                 'hr_inc_exea_flx': start_timestamp,
                 'hr_fim_exea_flx': end_timestamp,
                 'idfr_est_flx': idfr_est_flx,
+                'est_abn_flx': est_abn_flx,
+                'est_excd_flx': est_excd_flx,
+                'est_jobh_flx': est_jobh_flx,
                 'ts_ult_atl': current_timestamp
             })
         else:
@@ -255,6 +264,9 @@ class JobsRepository:
                     idfr_flx_rtin_bch,
                     idfr_exea_flx,
                     idfr_est_flx,
+                    est_abn_flx,
+                    est_excd_flx,
+                    est_jobh_flx,
                     in_atr,
                     dt_inc_flx,
                     hr_inc_exea_flx,
@@ -265,6 +277,9 @@ class JobsRepository:
                     :idfr_flx_rtin_bch,
                     DEFAULT,
                     :idfr_est_flx,
+                    :est_abn_flx,
+                    :est_excd_flx,
+                    :est_jobh_flx,
                     'false',
                     :dt_inc_flx,
                     :hr_inc_exea_flx,
@@ -277,6 +292,9 @@ class JobsRepository:
                 'idfr_flx_rtin_bch': id_fluxo,
                 'dt_inc_flx': current_date,
                 'idfr_est_flx': idfr_est_flx,
+                'est_abn_flx': est_abn_flx,
+                'est_excd_flx': est_excd_flx,
+                'est_jobh_flx': est_jobh_flx,
                 'hr_inc_exea_flx': start_timestamp,
                 'hr_fim_exea_flx': end_timestamp,
                 'ts_ult_atl': current_timestamp
@@ -341,3 +359,27 @@ class JobsRepository:
             })
 
         self.db.commit()
+
+    def buscar_status_fluxos(self):
+        query = text("""
+            SELECT 
+                idfr_flx_rtin_bch,
+                idfr_est_flx
+            FROM 
+                batch.acpt_exea_flx
+        """)
+        result = self.db.execute(query)
+        return [dict(row._mapping) for row in result]
+
+    def buscar_status_fluxo_por_id(self, id_fluxo: str):
+        query = text("""
+            SELECT
+                idfr_flx_rtin_bch,
+                idfr_est_flx
+            FROM 
+                batch.acpt_exea_flx
+            WHERE 
+                idfr_flx_rtin_bch = :id_fluxo
+        """)
+        result = self.db.execute(query, {'id_fluxo': id_fluxo})
+        return result.fetchone()

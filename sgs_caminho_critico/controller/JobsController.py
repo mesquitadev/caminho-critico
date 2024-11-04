@@ -8,7 +8,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from sgs_caminho_critico.repository.JobsRepository import JobsRepository
-from sgs_caminho_critico.utils import status_mapping, get_pcp_token
+from sgs_caminho_critico.utils import status_mapping, get_pcp_token, format_timestamp
 
 jobs_router = APIRouter()
 
@@ -81,10 +81,9 @@ async def capturar_e_atualizar_status_jobs(request: JobStatusRequest):
                         'est_excd': job['deleted'],
                         'idfr_est_job': status_mapping.get(job['status'], 0),
                         'dt_atl': datetime.now().isoformat(),
-                        'hr_inc_exea_job': job.get('startTime', ''),
-                        'hr_fim_exea_job': job.get('endTime', '')
+                        'hr_inc_exea_job': format_timestamp(job['startTime']) if job['startTime'] else None,
+                        'hr_fim_exea_job': format_timestamp(job['endTime']) if job['endTime'] else None
                     })
-        print(f'job_exea_ctm_data {job_exea_ctm_data}')
 
         # Fetch existing records from the database
         existing_records = repo.fetch_existing_job_exea_ctm_data([job['idfr_sch'] for job in job_exea_ctm_data])
