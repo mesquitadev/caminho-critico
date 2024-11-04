@@ -120,6 +120,7 @@ def format_timestamp(timestamp):
     else:
         raise ValueError("timestamp must be a string or datetime object")
 
+
 def map_mainstat_to_color_icon(mainstat, est_jobh, est_excd):
     if est_excd and mainstat != 'Ended Ok':
         return {'color': '#900', 'icon': 'times-circle'}
@@ -259,4 +260,3 @@ def map_status(idfr_est_flx):
         return "Finalizado"
     else:
         return "Status desconhecido"
-

@@ -1,12 +1,13 @@
+import json
 import os
 import traceback
-from datetime import datetime
-from fastapi import HTTPException
-import json
+
 import requests
+from fastapi import HTTPException
+
 from sgs_caminho_critico.repository.JobsRepository import JobsRepository
 from sgs_caminho_critico.utils import read_csv_file, construir_grafo, encontrar_caminho, remover_repetidos, \
-    exibir_edges, limpa_campos, format_order_date, map_mainstat_to_color_icon, get_pcp_token, format_timestamp
+    exibir_edges, limpa_campos, format_order_date, map_mainstat_to_color_icon, get_pcp_token
 
 
 def buscar_dados_job_pcp_comandos(orderid, ambiente):

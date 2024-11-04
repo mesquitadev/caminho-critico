@@ -362,10 +362,10 @@ class JobsRepository:
 
     def buscar_status_fluxos(self):
         query = text("""
-            SELECT 
+            SELECT
                 idfr_flx_rtin_bch,
                 idfr_est_flx
-            FROM 
+            FROM
                 batch.acpt_exea_flx
         """)
         result = self.db.execute(query)
@@ -376,9 +376,9 @@ class JobsRepository:
             SELECT
                 idfr_flx_rtin_bch,
                 idfr_est_flx
-            FROM 
+            FROM
                 batch.acpt_exea_flx
-            WHERE 
+            WHERE
                 idfr_flx_rtin_bch = :id_fluxo
         """)
         result = self.db.execute(query, {'id_fluxo': id_fluxo})
