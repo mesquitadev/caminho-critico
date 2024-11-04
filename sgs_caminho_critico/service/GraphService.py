@@ -73,10 +73,12 @@ class GraphService:
                             'mainStat': limpa_campos(node['mainstat']),
                             'subTitle': f"{limpa_campos(node['ambiente'])}:{limpa_campos(node['orderid'])}",
                             'detail__pasta': limpa_campos(node['pasta']),
-                            'detail__runnumber': node['run_number'],
+                            'detail__runnumber': limpa_campos(node['run_number']),
                             'detail__odate': format_order_date(node['odate']),
                             'detail__held': limpa_campos(node['held']),
                             'detail__deleted': limpa_campos(node['deleted']),
+                            'detail__starttime': limpa_campos(node['start_time']),
+                            'detail__endtime': limpa_campos(node['start_time']),
                             'icon': map_mainstat_to_color_icon(node['mainstat'], node['held'], node['deleted'])['icon'],
                             'color': map_mainstat_to_color_icon(node['mainstat'], node['held'], node['deleted'])[
                                 'color'],
