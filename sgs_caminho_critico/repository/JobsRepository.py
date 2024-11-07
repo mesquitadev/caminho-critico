@@ -213,7 +213,7 @@ class JobsRepository:
         self.db.commit()
 
     def update_status_fluxo(self, id_fluxo, idfr_est_flx, start_timestamp, end_timestamp, est_abn_flx, est_excd_flx,
-                            est_jobh_flx):
+                            est_jobh_flx, in_atr):
         current_date = datetime.now().strftime('%Y-%m-%d')
         current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -241,6 +241,7 @@ class JobsRepository:
                     est_abn_flx = :est_abn_flx,
                     est_excd_flx = :est_excd_flx,
                     est_jobh_flx = :est_jobh_flx,
+                    in_atr = :in_atr,
                     est_ati = 'true',
                     ts_ult_atl = :ts_ult_atl
                 WHERE
@@ -256,6 +257,7 @@ class JobsRepository:
                 'est_abn_flx': est_abn_flx,
                 'est_excd_flx': est_excd_flx,
                 'est_jobh_flx': est_jobh_flx,
+                'in_atr': in_atr,
                 'ts_ult_atl': current_timestamp
             })
         else:
@@ -280,7 +282,7 @@ class JobsRepository:
                     :est_abn_flx,
                     :est_excd_flx,
                     :est_jobh_flx,
-                    'false',
+                    :in_atr,
                     :dt_inc_flx,
                     :hr_inc_exea_flx,
                     :hr_fim_exea_flx,
@@ -295,6 +297,7 @@ class JobsRepository:
                 'est_abn_flx': est_abn_flx,
                 'est_excd_flx': est_excd_flx,
                 'est_jobh_flx': est_jobh_flx,
+                'in_atr': in_atr,
                 'hr_inc_exea_flx': start_timestamp,
                 'hr_fim_exea_flx': end_timestamp,
                 'ts_ult_atl': current_timestamp
@@ -378,6 +381,20 @@ class JobsRepository:
                 idfr_est_flx
             FROM
                 batch.acpt_exea_flx
+            WHERE
+                idfr_flx_rtin_bch = :id_fluxo
+        """)
+        result = self.db.execute(query, {'id_fluxo': id_fluxo})
+        return result.fetchone()
+
+    def buscar_fluxo_por_id(self, id_fluxo: str):
+        query = text("""
+            SELECT
+                idfr_flx_rtin_bch,
+                hr_inc_flx,
+                hr_fim_flx
+            FROM
+                batch.cad_flx_rtin_bch
             WHERE
                 idfr_flx_rtin_bch = :id_fluxo
         """)

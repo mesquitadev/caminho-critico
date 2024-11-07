@@ -1,6 +1,6 @@
 import os
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import HTTPException
 import json
 import requests
@@ -113,6 +113,38 @@ class FluxoService:
                     start_time = start_time if start_time else None
                     end_time = end_time if end_time else None
 
+                    # Verificar se o fluxo está atrasado
+                    fluxo_data = self.repo.buscar_fluxo_por_id(id_fluxo)
+                    in_atr = False
+                    print(f"fluxo {fluxo_data}")
+                    if fluxo_data:
+                        hr_inc_flx = fluxo_data[1]  # Assuming this is in timestamp format
+                        hr_fim_flx = fluxo_data[2]  # Assuming this is in datetime format
+                        print(f"hr_inc {hr_inc_flx}")
+                        print(f"hr_fim {hr_fim_flx}")
+
+                        # Convert hr_inc_flx to datetime if necessary
+                        if isinstance(hr_inc_flx, str):
+                            hr_inc_flx = datetime.strptime(hr_inc_flx, '%Y-%m-%d %H:%M:%S')
+
+                        # Convert hr_fim_flx to datetime if necessary
+                        if isinstance(hr_fim_flx, str):
+                            hr_fim_flx = datetime.strptime(hr_fim_flx, '%Y-%m-%d %H:%M:%S')
+
+                        # Ensure hr_inc_flx is a datetime object
+                        if isinstance(hr_inc_flx, timedelta):
+                            hr_inc_flx = datetime.now() + hr_inc_flx
+
+                        # Ensure hr_fim_flx is a datetime object
+                        if isinstance(hr_fim_flx, timedelta):
+                            hr_fim_flx = datetime.now() + hr_fim_flx
+
+                        current_time = datetime.now()
+                        if current_time < hr_inc_flx or current_time > hr_fim_flx:
+                            in_atr = True
+
+                        print(f"status: {in_atr}")
+
                     # Atualizar o status do fluxo na tabela ACPT_EXEA_FLX
                     status = set_node_status(nodes_data, edges_data)
                     dados_insert = self.repo.update_status_fluxo(
@@ -122,7 +154,8 @@ class FluxoService:
                         end_time,
                         abended_nodes,
                         deleted_nodes,
-                        held_nodes
+                        held_nodes,
+                        in_atr
                     )
                     self.repo.insert_obs_acpt_exea_flx(id_fluxo, dados_insert[0],
                                                        ":".join(fluxo_messages.setdefault(id_fluxo, [])))
