@@ -44,10 +44,7 @@ class FluxoService:
         try:
             file_name = os.getenv('CSV_FILES') + 'edges_novo_cp.csv'
             if not os.path.exists(file_name):
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Arquivo {file_name} nao encontrado, favor rodar o endpoint de atualização."
-                )
+                raise FileNotFoundError(f"Arquivo {file_name} não encontrado, favor rodar o endpoint de atualização.")
 
             records = read_csv_file(file_name)
             grafo = construir_grafo(records)
@@ -190,12 +187,19 @@ class FluxoService:
         try:
             fluxo = self.repo.buscar_status_fluxo_por_id(id_fluxo)
             if not fluxo:
-                raise HTTPException(status_code=404, detail="Fluxo not found")
+                error_message = {
+                    "message": "Fluxo não encontrado",
+                }
+                return error_message
 
-            status = {
+            fluxo = {
                 "id_fluxo": fluxo[0],  # Accessing the first element of the tuple
                 "status": map_status(fluxo[1])  # Accessing the second element of the tuple
             }
-            return status
+            return fluxo
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            error_message = {
+                "error": str(e),
+                "trace": traceback.format_exc()
+            }
+            raise HTTPException(status_code=500, detail=error_message)
