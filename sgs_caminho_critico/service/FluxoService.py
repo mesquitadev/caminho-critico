@@ -42,13 +42,14 @@ class FluxoService:
 
     def atualizar_status_fluxo(self) -> dict:
         try:
-            file_name = os.getenv('CSV_FILES') + 'edges_novo_cp.csv'
+            file_name = os.getenv('CSV_FILES') + os.path.sep + 'edges_novo_cp.csv'
             if not os.path.exists(file_name):
                 raise FileNotFoundError(f"Arquivo {file_name} não encontrado, favor rodar o endpoint de atualização.")
 
             records = read_csv_file(file_name)
             grafo = construir_grafo(records)
             fluxos = self.repo.buscar_fluxos()
+
             current_date = datetime.now().strftime('%Y-%m-%d')
             fluxo_messages = {}
 

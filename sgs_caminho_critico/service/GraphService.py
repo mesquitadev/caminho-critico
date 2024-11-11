@@ -41,7 +41,7 @@ class GraphService:
 
     def processar_dados(self, rotina_inicial: str, rotina_destino: str) -> dict:
         try:
-            file_name = os.getenv('CSV_FILES') + 'edges_novo_cp.csv'
+            file_name = os.getenv('CSV_FILES') + os.path.sep + 'edges_novo_cp.csv'
             if not os.path.exists(file_name):
                 raise HTTPException(
                     status_code=404,

@@ -1,35 +1,35 @@
-# from unittest import mock
-#
-# from sgs_caminho_critico.controller.FluxoController import processar_fluxos, retornar_status_fluxo, \
-#     retornar_status_fluxo_por_id
-# from sgs_caminho_critico.service.FluxoService import FluxoService
-#
-#
-# def test_processar_fluxos(fluxos_mock, mock_csv_file):
-#     response = processar_fluxos()
-#     assert response == {"message": "Fluxos atualizados com sucesso!"}
-#
-#
-# def test_retornar_status_fluxo(fluxos_mock, mocker):
-#     fluxo_service = FluxoService()
-#     repo_buscar_fluxos_mock = fluxo_service.repo.buscar_status_fluxos = mocker.Mock(return_value=fluxos_mock)
-#
-#     fluxos = fluxo_service.get_status_fluxos()
-#     assert len(fluxos) > 0
-#     assert len(fluxos_mock) > 0
-#     assert repo_buscar_fluxos_mock.call_count == 1
-#
-#
-# def test_retornar_status_fluxo_por_id(fluxo_mock):
-#     fluxo_service = FluxoService()
-#     fluxo_service.repo.buscar_status_fluxo_por_id = mock.MagicMock(return_value=fluxo_mock)
-#     fluxo = fluxo_service.get_status_fluxo_by_id('13')
-#     assert fluxo == fluxo_mock
-#
-#
-# def test_retornar_status_fluxo_com_erro(fluxo_mock):
-#     fluxo_service = FluxoService()
-#     fluxo_service.repo.buscar_status_fluxo_por_id = mock.MagicMock(return_value=fluxo_mock)
-#     fluxo = fluxo_service.get_status_fluxo_by_id('50')
-#     print(f"flx {fluxo}")
-#     assert fluxo == fluxo_mock
+import pytest
+from fastapi import HTTPException
+
+from sgs_caminho_critico.service.ReportService import ReportService
+
+
+def test_pegar_relatorios_do_inventario_e_salvar_no_csv_success(mocker, mock_repo):
+    # Mockar a variável de ambiente CSV_FILES
+    mocker.patch('os.getenv', return_value='/path/to/csv')
+
+    # Mockar o método fetch_and_save_records_to_csv do repositório JobsRepository
+    mock_repo = mocker.patch(
+        'sgs_caminho_critico.repository.JobsRepository.JobsRepository.fetch_and_save_records_to_csv')
+
+    # Chamar o método que está sendo testado
+    response = ReportService.pegar_relatorios_do_inventario_e_salvar_no_csv()
+
+    # Verificar se o método fetch_and_save_records_to_csv foi chamado com o caminho correto
+    mock_repo.assert_called_once_with('/path/to/csv\\edges_novo_cp.csv')
+
+    # Verificar se o retorno está correto
+    assert response == {"message": "Registros salvos no csv com sucesso!"}
+
+
+def test_pegar_relatorios_do_inventario_e_salvar_no_csv_env_var_not_set(mocker):
+    # Mockar a variável de ambiente CSV_FILES para retornar None
+    mocker.patch('os.getenv', return_value=None)
+
+    # Chamar o método que está sendo testado e verificar se a exceção é lançada
+    with pytest.raises(HTTPException) as exc_info:
+        ReportService.pegar_relatorios_do_inventario_e_salvar_no_csv()
+
+    # Verificar se o status code e a mensagem de erro estão corretos
+    assert exc_info.value.status_code == 500
+    assert exc_info.value.detail == "Variavel de ambiente 'CSV_FILES' não encontrada."
