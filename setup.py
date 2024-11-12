@@ -19,6 +19,7 @@ unit_test_requirements = [
     'sqlalchemy',
     'pytest-mock',
     'pytest-cov',
+    'python-dotenv',
 ]
 integration_test_requirements = [
     'pytest',
