@@ -6,8 +6,18 @@ from sgs_caminho_critico.service.FluxoService import FluxoService
 from sgs_caminho_critico.repository.JobsRepository import JobsRepository
 
 
+@pytest.fixture(autouse=True)
+def mock_env_vars(monkeypatch):
+    # Mockar as variáveis de ambiente de conexão do banco de dados
+    monkeypatch.setenv('DB_HOST', 'localhost')
+    monkeypatch.setenv('DB_PORT', '5432')
+    monkeypatch.setenv('DB_USER', 'test_user')
+    monkeypatch.setenv('DB_PASSWORD', 'test_password')
+    monkeypatch.setenv('DB_NAME', 'test_db')
+
+
 @pytest.fixture
-def mock_db_session():
+def mock_db_session(mock_env_vars):
     # Create a mock database session
     mock_session = MagicMock()
     return mock_session
