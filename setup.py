@@ -14,6 +14,7 @@ dev_requirements = [
 ]
 unit_test_requirements = [
     'pytest',
+    'fastapi'
 ]
 integration_test_requirements = [
     'pytest',
