@@ -1,7 +1,8 @@
 # -*- encoding: utf-8 -*-
 # Source: https://packaging.python.org/guides/distributing-packages-using-setuptools/
-
+import configparser
 import io
+import os
 import re
 
 from setuptools import find_packages, setup
@@ -37,6 +38,21 @@ with io.open('./sgs_caminho_critico/__init__.py', encoding='utf8') as version_f:
 
 with io.open('README.md', encoding='utf8') as readme:
     long_description = readme.read()
+
+
+# Função para carregar variáveis de ambiente do pytest.ini
+def load_env_from_pytest_ini():
+    config = configparser.ConfigParser()
+    config.read('pytest.ini')
+    if 'pytest' in config:
+        for key, value in config['pytest'].items():
+            if key.startswith('env_'):
+                env_var = key[4:].upper()
+                os.environ[env_var] = value
+
+
+# Carregar variáveis de ambiente do pytest.ini
+load_env_from_pytest_ini()
 
 setup(
     name="sgs_caminho_critico",
