@@ -11,6 +11,11 @@ from sgs_caminho_critico.service.FluxoService import FluxoService
 from sgs_caminho_critico.repository.JobsRepository import JobsRepository
 
 
+@pytest.fixture(autouse=True)
+def settings_mock():
+    settings.pgre_dsn = 'postgresql://user_gprom63:magic123@silo01.postgresql.bdh.desenv.bb.com.br:5432/pcp'
+
+
 @pytest.fixture
 def session():
     # Criar o engine do SQLAlchemy usando a variável DATABASE_URL
