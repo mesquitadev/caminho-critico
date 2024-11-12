@@ -5,8 +5,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM atf.intranet.bb.com.br:5001/bb/lnx/lnx-python3:3.8.2
 
+FROM docker.binarios.intranet.bb.com.br/python:3.11 AS base
+
+COPY pip.conf /etc/pip.conf
+COPY requirements.txt /tmp/requirements.txt
+COPY bundle.crt /etc/ssl/certs/bb.bundle.crt
+COPY skip-ssl-check /etc/apt/apt.conf.d/skip-ssl-check
+COPY supervisord.conf /etc/supervisord.conf
+RUN mkdir /app
+WORKDIR /app
+COPY . .
+
+
+# hadolint ignore=DL3033,DL3018,DL3059,DL3013
+RUN pip3 --no-cache-dir install --upgrade pip
+# hadolint ignore=DL3033,DL3018,DL3059,DL3013
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+# hadolint ignore=DL3033,DL3018,DL3059,DL3013
+RUN python3 setup.py sdist
+# hadolint ignore=DL3033,DL3018,DL3059,DL3013
+RUN rm -rf dist/*.whl
+# hadolint ignore=DL3033,DL3018,DL3059,DL3013
+RUN pip3 install --no-cache-dir dist/sgs_caminho_critico*
+
+
+FROM docker.binarios.intranet.bb.com.br/python:3.11
 ARG build_date
 ARG vcs_ref
 ARG versao
@@ -32,14 +56,19 @@ LABEL \
     org.label-schema.dockerfile="${BOM_PATH}/Dockerfile"
 
 # Save Bill of Materials to image. Não remova!
-# COPY README.md CHANGELOG.md LICENSE Dockerfile ${BOM_PATH}/
+COPY README.md CHANGELOG.md LICENSE Dockerfile ${BOM_PATH}/
 
 ENV \
     VERSAO=$versao
 
-# exemplo
-RUN \
-    apk add --quiet --no-cache \
-        unzip=6.0-r4
+COPY . /sgs_caminho_critico
+COPY --from=base /usr/local/bin /usr/local/bin
+COPY --from=base /usr/local/lib /usr/local/lib
 
-CMD ["/bin/sh"]
+RUN mkdir /csv  && \
+    ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime && \
+    rm -rf /sgs_caminho_critico/.venv
+
+WORKDIR /sgs_caminho_critico
+
+CMD ["python","-m","uvicorn", "--host", "0.0.0.0", "sgs_caminho_critico.run:app"]

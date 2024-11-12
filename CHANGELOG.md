@@ -15,3 +15,8 @@ O formato é baseado em [Keep a Changelog](http://keepachangelog.com/pt-BR/1.0.0
 
 - Adicionado
   - Primeira versão
+
+## [1.0.1.dev41](https://fontes.intranet.bb.com.br/sgs/sgs-caminho-critico/sgs-caminho-critico/tags/1.0.1.dev41) - 2024-09-27
+
+- Adicionado
+  - Ajuste insert status

@@ -1,0 +1,6 @@
+{
+  "$schema":"https://binarios.intranet.bb.com.br/artifactory/generic-bb-binarios-aic-local/publico/json-schemas/aic.schema.json",
+  "pipeline": {
+    "bbFlow": true
+  }
+}

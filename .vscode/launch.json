@@ -1,0 +1,45 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid:830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: FastAPI",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",
+            "jinja": true,
+            "env":{ "AMBIENTE":"BR",
+                    "ZWE_PWD":"49768090",
+                    "ZWE_USER":"zwepcp",
+                    "ZOWE_IMAGE_B2":"https://10.8.36.41",
+                    "ZOWE_IMAGE_B3":"https://10.8.36.67",
+                    "ZOWE_IMAGE_BR":"https://10.8.36.26",
+                    "ZOWE_IMAGE_DS":"https://172.17.209.161",
+                    "ZOWE_IMAGE_HM":"https://172.17.211.150",
+                    "ZOWE_IMAGE_LB":"https://172.17.208.5",
+                    "CSV_FILES":"~/F8176976/dev/files",
+                    "CTM_DS":"https://ctm.desenv.bb.com.br:8443/automation-api/",
+                    "CTM_HM":"https://ctm.hm.bb.com.br:8443/automation-api/",
+                    "CTM_PROD":"https://ctm.intranet.bb.com.br:8443/automation-api/",
+                    "CTM_PWD":"AxZ8795p",
+                    "CTM_USER":"CTMPCP00",
+                    "FRC_DTSET":"PCP.FORCEJCL.SS500115",
+                    "FRCFTS_DTSET":"PCP.FORCECND.FTS.DEZ22.SS500115",
+                    "PLXB2":"SYSPLEX2",
+                    "PLXB3":"SYSPLEX3",
+                    "PLXBR":"SYSPLEX1",
+                    "PLXDES":"PLEXDES",
+                    "PLXHM":"PLEXHOM",
+                    "DB2_USER":"DB2I0090",
+                    "DB2_PWD":"31207139"
+        },
+            "args": 
+            [
+                "sgs_caminho_critico.run:app", "--reload", "--host", "0.0.0.0"
+            ],
+            "justMyCode": true
+        }
+    ]
+}

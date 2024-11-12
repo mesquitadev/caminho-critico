@@ -19,7 +19,7 @@ integration_test_requirements = [
     'pytest',
 ]
 run_requirements = [
-    'flask',
+    'anytree',
 ]
 
 with io.open('./sgs_caminho_critico/__init__.py', encoding='utf8') as version_f:
@@ -42,7 +42,7 @@ setup(
     include_package_data=True,
     url="https://fontes.intranet.bb.com.br/sgs/sgs-caminho-critico/sgs-caminho-critico",
     license="COPYRIGHT",
-    description="Adicione uma descricao para o seu projeto",
+    description="Constroi mapa de rotinas batch",
     long_description=long_description,
     zip_safe=False,
     install_requires=run_requirements,
