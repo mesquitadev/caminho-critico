@@ -42,6 +42,7 @@ run_requirements = [
     'pydantic-settings==2.4.0',
     'ujson==5.10.0',
     'urllib3==2.2.0',
+    'networkx==2.7.1',
 ]
 
 with io.open('./sgs_caminho_critico/__init__.py', encoding='utf8') as version_f:
