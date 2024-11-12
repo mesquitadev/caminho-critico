@@ -71,4 +71,4 @@ RUN mkdir /csv  && \
 
 WORKDIR /sgs_caminho_critico
 
-CMD ["python","-m","uvicorn", "--host", "0.0.0.0", "sgs_caminho_critico.run:app"]
+CMD ["pyagent", "run", "uvicorn", "--host", "0.0.0.0", "sgs_caminho_critico.run:app"]
