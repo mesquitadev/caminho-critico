@@ -14,7 +14,11 @@ dev_requirements = [
 ]
 unit_test_requirements = [
     'pytest',
-    'fastapi'
+    'fastapi',
+    'requests',
+    'sqlalchemy',
+    'pytest-mock',
+    'pytest-cov',
 ]
 integration_test_requirements = [
     'pytest',
