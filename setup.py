@@ -11,6 +11,7 @@ dev_requirements = [
     'flake8',
     'isort',
     'pytest',
+    'mock',
 ]
 unit_test_requirements = [
     'pytest',
@@ -20,12 +21,26 @@ unit_test_requirements = [
     'pytest-mock',
     'pytest-cov',
     'python-dotenv',
+    'mock',
+    'pytest',
+    'coverage',
+    'factory_boy',
 ]
 integration_test_requirements = [
     'pytest',
 ]
 run_requirements = [
-    'anytree',
+    'appdynamics==24.7.0.6967',
+    'fastapi[all]==0.111.0',
+    'fastapi-cli==0.0.4',
+    'loguru==0.7.2',
+    'orjson==3.10.5',
+    'psycopg2-binary==2.9.9',
+    'pydantic==2.8.2',
+    'pydantic_core==2.20.1',
+    'pydantic-settings==2.4.0',
+    'ujson==5.10.0',
+    'urllib3==2.2.0',
 ]
 
 with io.open('./sgs_caminho_critico/__init__.py', encoding='utf8') as version_f:
