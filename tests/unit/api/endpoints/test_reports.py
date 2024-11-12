@@ -16,7 +16,7 @@ def test_pegar_relatorios_do_inventario_e_salvar_no_csv_success(mocker, mock_rep
     response = ReportService.pegar_relatorios_do_inventario_e_salvar_no_csv()
 
     # Verificar se o método fetch_and_save_records_to_csv foi chamado com o caminho correto
-    mock_repo.assert_called_once_with('/path/to/csv\\edges_novo_cp.csv')
+    mock_repo.assert_called_once_with('/path/to/csv/edges_novo_cp.csv')
 
     # Verificar se o retorno está correto
     assert response == {"message": "Registros salvos no csv com sucesso!"}
