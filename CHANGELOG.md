@@ -20,3 +20,8 @@ O formato é baseado em [Keep a Changelog](http://keepachangelog.com/pt-BR/1.0.0
 
 - Adicionado
   - Ajuste insert status
+
+## [1.0.2](https://fontes.intranet.bb.com.br/sgs/sgs-caminho-critico/sgs-caminho-critico/tags/1.0.2) - 2024-11-12
+
+- Adicionado
+  - Teste unitario
