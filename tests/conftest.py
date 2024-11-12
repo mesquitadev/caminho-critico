@@ -32,9 +32,9 @@ def session():
 
 
 @pytest.fixture
-def fluxo_service(mock_db_session, mock_repo):
+def fluxo_service(session, mock_repo):
     # Patch the SessionLocal to return the mock session
-    with patch('sgs_caminho_critico.config.Database.SessionLocal', return_value=mock_db_session):
+    with patch('sgs_caminho_critico.config.Database.SessionLocal', return_value=session):
         service = FluxoService()
         service.repo = mock_repo  # Use the mock repository
         return service
