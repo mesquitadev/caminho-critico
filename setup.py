@@ -29,6 +29,17 @@ unit_test_requirements = [
 ]
 integration_test_requirements = [
     'pytest',
+    'fastapi',
+    'requests',
+    'sqlalchemy',
+    'pytest-mock',
+    'pytest-cov',
+    'python-dotenv',
+    'mock',
+    'pytest',
+    'coverage',
+    'factory_boy',
+    'networkx'
 ]
 run_requirements = [
     'appdynamics==24.7.0.6967',
