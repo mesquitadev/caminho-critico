@@ -25,7 +25,7 @@ def buscar_dados_job_pcp_comandos(orderid, ambiente):
     }
 
     try:
-        response = requests.post(api_url, json=payload, headers=headers, verify=False)
+        response = requests.post(api_url, json=payload, headers=headers, verify=True)
         jobs_data = response.json().get("data", {})
         # Extract the specific message
         hold_state_message = jobs_data if len(jobs_data) > 1 else None

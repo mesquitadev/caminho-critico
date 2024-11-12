@@ -28,7 +28,7 @@ class JobsService:
             }
 
             # Fazer a requisição para a API Control-M Services
-            response = requests.post(api_url, headers=headers, json=request, verify=False)
+            response = requests.post(api_url, headers=headers, json=request, verify=True)
             if response.status_code != 200:
                 raise HTTPException(status_code=response.status_code, detail="Erro ao acessar a API Control-M Services")
 
