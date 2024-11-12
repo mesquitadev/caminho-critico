@@ -175,7 +175,7 @@ def authenticate():
         "accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded"
     }
-    response = requests.post(auth_url, headers=headers, data=auth_data, verify=False)
+    response = requests.post(auth_url, headers=headers, data=auth_data, verify=True)
     if response.status_code == 200:
         token = response.json().get("access_token")
         token_expiration = datetime.now() + timedelta(minutes=30)
