@@ -30,7 +30,7 @@ run_requirements = [
     'fastapi-cli~=0.0.4',
     'PyYAML~=6.0',
     'SQLAlchemy~=1.4.50',
-    'starlette~=0.26.1',
+    'starlette',
     'uvicorn~=0.22.0',
     'celery~=5.3.1',
     'python-dotenv~=1.0.1',
