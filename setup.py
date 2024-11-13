@@ -40,6 +40,7 @@ integration_test_requirements = [
     'mock',
     'pytest',
     'coverage',
+    'httptools'
 ]
 run_requirements = [
     'appdynamics==24.7.0.6967',
@@ -54,6 +55,7 @@ run_requirements = [
     'pydantic==2.8.2',
     'pydantic_core==2.20.1',
     'pydantic-settings==2.4.0',
+    'httptools',
 ]
 
 with io.open('./sgs_caminho_critico/__init__.py', encoding='utf8') as version_f:
