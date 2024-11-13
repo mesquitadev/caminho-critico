@@ -65,7 +65,7 @@ RUN apt-get update && \
         python3-dev \
         gcc \
         python3.11-distutils \
-        python3.11-dev \
+        python3.11-dev && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/*
 
