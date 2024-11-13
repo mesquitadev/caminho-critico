@@ -15,9 +15,7 @@ dev_requirements = [
 ]
 unit_test_requirements = [
     'pytest',
-    'fastapi',
-    'requests',
-    'sqlalchemy',
+
     'pytest-mock',
     'pytest-cov',
     'python-dotenv',
@@ -42,11 +40,6 @@ integration_test_requirements = [
     'mock',
     'pytest',
     'coverage',
-    'networkx',
-    'psycopg2-binary==2.9.9',
-    'pydantic==2.8.2',
-    'pydantic_core==2.20.1',
-    'pydantic-settings==2.4.0',
 ]
 run_requirements = [
     'appdynamics==24.7.0.6967',
@@ -54,6 +47,13 @@ run_requirements = [
     'fastapi-cli==0.0.4',
     'urllib3==2.2.0',
     'networkx==2.7.1',
+    'fastapi',
+    'requests',
+    'sqlalchemy',
+    'psycopg2-binary==2.9.9',
+    'pydantic==2.8.2',
+    'pydantic_core==2.20.1',
+    'pydantic-settings==2.4.0',
 ]
 
 with io.open('./sgs_caminho_critico/__init__.py', encoding='utf8') as version_f:
