@@ -25,11 +25,10 @@ integration_test_requirements = [
 run_requirements = [
     'appdynamics~=24.7.0.6967',
     "mock~=5.0.2",
-    "mock-alchemy~=0.2.0",
+    "mock-alchemy",
     'fastapi[all]~=0.111.0',
     'fastapi-cli~=0.0.4',
-    'PyYAML~=6.0',
-    'SQLAlchemy~=1.4.50',
+    'SQLAlchemy',
     'starlette',
     'uvicorn~=0.22.0',
     'celery~=5.3.1',
@@ -38,9 +37,9 @@ run_requirements = [
     "httpx~=0.25.1",
     "psycopg2-binary~=2.9.9",
     'networkx~=2.7.1',
-    'pydantic~=2.8.2',
-    'pydantic_core~=2.20.1',
-    'pydantic-settings~=2.4.0',
+    'pydantic',
+    'pydantic_core',
+    'pydantic-settings',
 ]
 
 with io.open('./sgs_caminho_critico/__init__.py', encoding='utf8') as version_f:
