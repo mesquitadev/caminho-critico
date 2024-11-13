@@ -40,6 +40,7 @@ run_requirements = [
     'pydantic',
     'pydantic_core',
     'pydantic-settings',
+    'requests',
 ]
 
 with io.open('./sgs_caminho_critico/__init__.py', encoding='utf8') as version_f:
