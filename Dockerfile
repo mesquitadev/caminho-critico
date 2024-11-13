@@ -13,7 +13,7 @@ RUN apt-get update && \
         apt-get install --no-install-recommends -y \
         unzip=6.0-28 \
         make=4.3-4.1 \
-        gcc=4:10.2.1-1 \
+        gcc \
         build-essential=12.9 && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/*
