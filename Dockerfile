@@ -66,8 +66,8 @@ RUN apt-get update && \
         apt-get install --no-install-recommends -y \
         python3-dev \
         gcc \
-        libffi-dev \
-        libssl-dev \
+        python3.11-distutils \
+        python3.11-dev \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/*
 
