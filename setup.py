@@ -24,6 +24,7 @@ unit_test_requirements = [
     'mock',
     'pytest',
     'coverage',
+    'factory_boy',
     'networkx'
 ]
 integration_test_requirements = [
