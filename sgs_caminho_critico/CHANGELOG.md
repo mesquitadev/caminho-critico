@@ -16,7 +16,8 @@ O formato é baseado em [Keep a Changelog](http://keepachangelog.com/pt-BR/1.0.0
 
 ### Removido
 
-## [0.0.1-SNAPSHOT](https://fontes.intranet.bb.com.br/sgs/sgs-caminho-critico/sgs-caminho-critico/tags/0.0.1-SNAPSHOT) - aaaa-mm-dd
+## [1.1.2](https://fontes.intranet.bb.com.br/sgs/sgs-caminho-critico/sgs-caminho-critico/tags/1.1.2) - 2024-11-13
 
 ### Adicionado
 - Primeira versão
+- Geração de json para grafo de rotinas com início e fim
