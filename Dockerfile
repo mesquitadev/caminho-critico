@@ -22,8 +22,6 @@ COPY . .
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN pip3 --no-cache-dir install --upgrade pip
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
-# hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN python3 setup.py sdist
 # hadolint ignore=DL3033,DL3018,DL3059,DL3013
 RUN rm -rf dist/*.whl
