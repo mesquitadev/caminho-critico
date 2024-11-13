@@ -8,6 +8,14 @@
 
 FROM docker.binarios.intranet.bb.com.br/python:3.11 AS base
 
+# hadolint ignore=DL3033,DL3018,DL3059,DL3008
+RUN apt-get update && \
+        apt-get install --no-install-recommends -y \
+        unzip=6.0-28 \
+        make=4.3-4.1 \
+        build-essential=12.9 && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/*
 COPY sources.list /etc/apt/sources.list
 COPY pip.conf /etc/pip.conf
 COPY requirements.txt /tmp/requirements.txt
