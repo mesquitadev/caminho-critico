@@ -14,7 +14,7 @@ RUN apt-get update && \
         unzip=6.0-28 \
         make=4.3-4.1 \
         gcc=4:10.2.1-1 \
-        python3-dev=3.11 \
+        python3-dev=3.9.2-3 \
         build-essential=12.9 && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/*
