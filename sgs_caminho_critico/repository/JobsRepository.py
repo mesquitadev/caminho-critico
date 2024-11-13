@@ -1,6 +1,5 @@
 import csv
 import os
-import logging
 from datetime import datetime
 
 from sqlalchemy.orm import Session
@@ -81,11 +80,10 @@ class JobsRepository:
         return [dict(row._mapping) for row in result]
 
     def fetch_and_save_records_to_csv(self, csv_file_path):
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
         if os.path.exists(csv_file_path):
             os.remove(csv_file_path)
-            logging.info(f'Arquivo {csv_file_path} apagado antes de atualizar.')
+            print(f'Arquivo {csv_file_path} apagado antes de atualizar.')
 
         query = text("""
             SELECT

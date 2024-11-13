@@ -10,6 +10,10 @@ import requests
 import urllib3
 from fastapi import HTTPException
 
+DATE_FORMAT = '%Y-%m-%d'
+DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+ENDED_OK = 'Ended Ok'
+
 
 def read_csv_file(file_name, delimiter=','):
     records = []
@@ -98,11 +102,11 @@ def format_order_date(order_date):
         return ''
     if isinstance(order_date, str):
         try:
-            return datetime.strptime(order_date, '%Y-%m-%d').strftime('%Y-%m-%d')
+            return datetime.strptime(order_date, DATE_FORMAT).strftime(DATE_FORMAT)
         except ValueError:
-            return datetime.strptime(order_date, '%y%m%d').strftime('%Y-%m-%d')
+            return datetime.strptime(order_date, '%y%m%d').strftime(DATE_FORMAT)
     elif isinstance(order_date, (datetime, date)):
-        return order_date.strftime('%Y-%m-%d')
+        return order_date.strftime(DATE_FORMAT)
     else:
         raise ValueError("order_date must be a string, datetime, or date object")
 
@@ -112,24 +116,24 @@ def format_timestamp(timestamp):
         return ''
     if isinstance(timestamp, str):
         try:
-            return datetime.strptime(timestamp, '%Y%m%d%H%M%S').strftime('%Y-%m-%d %H:%M:%S')
+            return datetime.strptime(timestamp, '%Y%m%d%H%M%S').strftime(DATETIME_FORMAT)
         except ValueError:
-            return datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+            return datetime.strptime(timestamp, DATETIME_FORMAT).strftime(DATETIME_FORMAT)
     elif isinstance(timestamp, datetime):
-        return timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        return timestamp.strftime(DATETIME_FORMAT)
     else:
         raise ValueError("timestamp must be a string or datetime object")
 
 
 def map_mainstat_to_color_icon(mainstat, est_jobh, est_excd):
-    if est_excd and mainstat != 'Ended Ok':
+    if est_excd and mainstat != ENDED_OK:
         return {'color': '#900', 'icon': 'times-circle'}
-    if est_jobh and mainstat != 'Ended Ok':
+    if est_jobh and mainstat != ENDED_OK:
         return {'color': '#900', 'icon': 'lock'}
 
     mapping = {
         'Executing': {'color': '#990', 'icon': 'spinner'},
-        'Ended Ok': {'color': '#090', 'icon': 'check-circle'},
+        ENDED_OK: {'color': '#090', 'icon': 'check-circle'},
         'Abended': {'color': '#900', 'icon': 'bug'},
         'Status unknown': {'color': '#379', 'icon': 'question-circle'},
         'Disappeared': {'color': '#500', 'icon': 'question-circle'},
@@ -211,7 +215,7 @@ def set_node_status(nodes_data, edges_data):
 
 
 def get_next_nodes(nodes_data, edges_data):
-    ended_ok_nodes = [node for node in nodes_data if node.get('mainstat') == 'Ended Ok']
+    ended_ok_nodes = [node for node in nodes_data if node.get('mainstat') == ENDED_OK]
 
     if not ended_ok_nodes:
         nodes_with_predecessors = {edge['target'] for edge in edges_data}
@@ -224,7 +228,7 @@ def get_next_nodes(nodes_data, edges_data):
         successors = [edge['target'] for edge in edges_data if edge['source'] == node['id']]
         for successor in successors:
             if successor not in added_node_ids:
-                next_node = next((n for n in nodes_data if n['id'] == successor and n.get('mainstat') != 'Ended Ok'),
+                next_node = next((n for n in nodes_data if n['id'] == successor and n.get('mainstat') != ENDED_OK),
                                  None)
                 if next_node:
                     next_nodes.append(next_node)
