@@ -11,66 +11,40 @@ dev_requirements = [
     'flake8',
     'isort',
     'pytest',
+    'mock~=5.0.2',
+    'mock-alchemy',
+
 ]
 unit_test_requirements = [
     'pytest',
     'pytest-mock',
     'pytest-cov',
+    'mock~=5.0.2',
+    'mock-alchemy',
+
 ]
 integration_test_requirements = [
     'pytest',
     'pytest-mock',
     'pytest-cov',
+    'mock~=5.0.2',
+    'mock-alchemy',
+
 ]
 run_requirements = [
     'httpx~=0.25.1',
-    'mock~=5.0.2',
-    'mock-alchemy',
     'psycopg2-binary~=2.9.9',
     'urllib3~=2.2.0',
-    'aiofiles',
-    'anyio',
     'appdynamics~=24.7.0.6967',
-    'celery~=5.3.1',
-    'certifi',
-    'charset-normalizer',
-    'click',
-    'colorama',
-    'contourpy',
-    'coverage',
-    'cycler',
     'fastapi[all]~=0.111.0',
     'fastapi-cli~=0.0.4',
-    'fonttools',
-    'greenlet',
-    'httpcore',
-    'idna',
-    'iniconfig',
-    'kiwisolver',
-    'matplotlib',
-    'mccabe',
     'networkx~=2.7.1',
-    'packaging',
-    'pillow',
-    'pluggy',
-    'post1asgiref',
-    'protobuf',
-    'psycopg2',
-    'pycodestyle',
     'pydantic',
     'pydantic_core',
     'pydantic-settings',
-    'pyparsing',
-    'pytest-env',
-    'python-dateutil',
     'python-dotenv~=1.0.1',
     'requests',
-    'scipy',
-    'sniffio',
     'SQLAlchemy',
-    'starlette',
-    'typing_extensions',
-    'uvicorn~=0.22.0',
 ]
 
 with io.open('./sgs_caminho_critico/__init__.py', encoding='utf8') as version_f:
@@ -102,12 +76,12 @@ setup(
          'unit': unit_test_requirements,
          'integration': integration_test_requirements,
     },
-    python_requires='>=3.6',
+    python_requires='>=3.11',
     classifiers=[
         'Intended Audience :: Information Technology',
         'Natural Language :: English',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.6'
+        'Programming Language :: Python :: 3.11'
     ],
     keywords=(),
     entry_points={
