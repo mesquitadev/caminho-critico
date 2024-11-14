@@ -13,7 +13,7 @@ dev_requirements = [
     'pytest',
     'mock~=5.0.2',
     'mock-alchemy',
-
+    'fastapi',
 ]
 unit_test_requirements = [
     'pytest',
@@ -21,7 +21,7 @@ unit_test_requirements = [
     'pytest-cov',
     'mock~=5.0.2',
     'mock-alchemy',
-
+    'fastapi',
 ]
 integration_test_requirements = [
     'pytest',
@@ -29,7 +29,7 @@ integration_test_requirements = [
     'pytest-cov',
     'mock~=5.0.2',
     'mock-alchemy',
-
+    'fastapi',
 ]
 run_requirements = [
     'httpx~=0.25.1',
