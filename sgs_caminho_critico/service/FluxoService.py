@@ -1,6 +1,6 @@
 import os
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime
 from fastapi import HTTPException
 import json
 import requests
@@ -8,7 +8,7 @@ import logging
 from sgs_caminho_critico.repository.JobsRepository import JobsRepository
 from sgs_caminho_critico.utils import read_csv_file, construir_grafo, encontrar_caminho, remover_repetidos, \
     exibir_edges, get_pcp_token, format_timestamp, \
-    get_next_nodes, set_node_status, map_status
+    get_next_nodes, set_node_status, map_status, concatenar_data_hora, determinar_data
 
 
 def buscar_dados_job_pcp_comandos(orderid, ambiente):
@@ -114,37 +114,36 @@ class FluxoService:
                     # Verificar se o fluxo está atrasado
                     fluxo_data = self.repo.buscar_fluxo_por_id(id_fluxo)
                     in_atr = False
-                    print(f"fluxo {fluxo_data}")
                     if fluxo_data:
-                        hr_inc_flx = fluxo_data[1]  # Assuming this is in timestamp format
-                        hr_fim_flx = fluxo_data[2]  # Assuming this is in datetime format
-                        print(f"hr_inc {hr_inc_flx}")
-                        print(f"hr_fim {hr_fim_flx}")
-
-                        # Convert hr_inc_flx to datetime if necessary
-                        if isinstance(hr_inc_flx, str):
-                            hr_inc_flx = datetime.strptime(hr_inc_flx, '%Y-%m-%d %H:%M:%S')
-
-                        # Convert hr_fim_flx to datetime if necessary
-                        if isinstance(hr_fim_flx, str):
-                            hr_fim_flx = datetime.strptime(hr_fim_flx, '%Y-%m-%d %H:%M:%S')
-
-                        # Ensure hr_inc_flx is a datetime object
-                        if isinstance(hr_inc_flx, timedelta):
-                            hr_inc_flx = datetime.now() + hr_inc_flx
-
-                        # Ensure hr_fim_flx is a datetime object
-                        if isinstance(hr_fim_flx, timedelta):
-                            hr_fim_flx = datetime.now() + hr_fim_flx
-
                         current_time = datetime.now()
-                        if current_time < hr_inc_flx or current_time > hr_fim_flx:
+                        hr_inc_flx = fluxo_data[1]  # Assuming this is in 'HH:MM:SS' format
+                        hr_fim_flx = fluxo_data[2]  # Assuming this is in 'HH:MM:SS' format
+                        # Extrair a hora de hr_inc_flx e hr_fim_flx
+                        hora_inc_flx = hr_inc_flx.seconds // 3600
+                        hora_fim_flx = hr_fim_flx.seconds // 3600
+
+                        # Determinar a data correta para hr_inc_flx e hr_fim_flx
+                        data_inc_flx = determinar_data(hora_inc_flx)
+                        data_fim_flx = determinar_data(hora_fim_flx)
+
+                        # Concatenate data_inc_flx and data_fim_flx with hr_inc_flx and hr_fim_flx
+                        if hr_inc_flx:
+                            hr_inc_flx = concatenar_data_hora(data_inc_flx, str(hr_inc_flx))
+                        if hr_fim_flx:
+                            hr_fim_flx = concatenar_data_hora(data_fim_flx, str(hr_fim_flx))
+
+                        if start_time is None and (current_time > hr_inc_flx):
+                            in_atr = True
+                        elif start_time and start_time > datetime.strptime(str(hr_inc_flx), '%Y-%m-%d %H:%M:%S'):
                             in_atr = True
 
-                        print(f"status: {in_atr}")
+                        if end_time is None and (current_time > hr_fim_flx):
+                            in_atr = True
+                        elif end_time and end_time > hr_fim_flx:
+                            in_atr = True
 
                     # Atualizar o status do fluxo na tabela ACPT_EXEA_FLX
-                    status = set_node_status(nodes_data, edges_data)
+                    status = set_node_status(start_time, end_time)
                     dados_insert = self.repo.update_status_fluxo(
                         id_fluxo,
                         status,

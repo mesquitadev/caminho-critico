@@ -1,6 +1,6 @@
 import csv
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
@@ -212,8 +212,13 @@ class JobsRepository:
 
     def update_status_fluxo(self, id_fluxo, idfr_est_flx, start_timestamp, end_timestamp, est_abn_flx, est_excd_flx,
                             est_jobh_flx, in_atr):
-        current_date = datetime.now().strftime('%Y-%m-%d')
         current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # Determine the current date or the previous date if before 7 AM
+        current_time = datetime.now()
+        if current_time.hour < 7:
+            current_date = (current_time - timedelta(days=1)).strftime('%Y-%m-%d')
+        else:
+            current_date = current_time.strftime('%Y-%m-%d')
 
         # Check if the record exists
         check_query = text("""

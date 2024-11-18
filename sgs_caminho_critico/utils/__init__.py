@@ -201,17 +201,13 @@ class DateTimeEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
-def set_node_status(nodes_data, edges_data):
-    for edge in edges_data:
-        target_node = next((node for node in nodes_data if node['id'] == edge['target']), None)
-        if target_node and target_node.get('end_time') is not None:
-            return 1  # Finalizado
-
-        source_node = next((node for node in nodes_data if node['id'] == edge['source']), None)
-        if source_node and source_node.get('start_time') is not None:
-            return 3  # Em execução
-
-    return 2  # Aguardando início
+def set_node_status(start_time, end_time):
+    if end_time is not None:
+        return 1  # Finalizado
+    elif start_time is not None:
+        return 3
+    else:
+        return 2  # Aguardando início
 
 
 def get_next_nodes(nodes_data, edges_data):
@@ -264,3 +260,26 @@ def map_status(idfr_est_flx):
         return "Finalizado"
     else:
         return "Status desconhecido"
+
+
+def concatenar_data_hora(data, hora):
+    return datetime.strptime(f"{data} {hora}", '%Y-%m-%d %H:%M:%S')
+
+
+# Função para determinar a data correta com base na hora atual e hora cadastrada
+def determinar_data(hora_cadastrada):
+    current_time = datetime.now()
+    current_hour = current_time.hour
+
+    if current_hour < 7:
+        if hora_cadastrada < 7:
+            data = current_time.strftime('%Y-%m-%d')
+        else:
+            data = (current_time - timedelta(days=1)).strftime('%Y-%m-%d')
+    else:
+        if hora_cadastrada < 7:
+            data = (current_time + timedelta(days=1)).strftime('%Y-%m-%d')
+        else:
+            data = current_time.strftime('%Y-%m-%d')
+
+    return data

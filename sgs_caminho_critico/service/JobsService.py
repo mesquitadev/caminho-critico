@@ -33,8 +33,6 @@ class JobsService:
                 raise HTTPException(status_code=response.status_code, detail="Erro ao acessar a API Control-M Services")
 
             jobs_data = response.json().get("data", {}).get("statuses", [])
-
-            print(f"jobs_data: {jobs_data}")
             # Buscar IDs dos jobs na tabela SCH_AGDD
             sch_agdd_data = self.repo.fetch_sch_agdd_data()
 
