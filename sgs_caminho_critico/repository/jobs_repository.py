@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
-from sgs_caminho_critico.config.Database import SessionLocal
+from sgs_caminho_critico.config.database import SessionLocal
 
 
 class JobsRepository:

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from sgs_caminho_critico.service.FluxoService import FluxoService
+from sgs_caminho_critico.service.fluxo_service import FluxoService
 
 fluxo_router = APIRouter()
 fluxo_service = FluxoService()

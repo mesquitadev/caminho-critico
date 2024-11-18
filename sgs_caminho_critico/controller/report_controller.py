@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from sgs_caminho_critico.service.ReportService import ReportService
+from sgs_caminho_critico.service.report_service import ReportService
 
 report_router = APIRouter()
 report_service = ReportService()

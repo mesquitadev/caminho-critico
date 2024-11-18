@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from sgs_caminho_critico.service.GraphService import GraphService
+from sgs_caminho_critico.service.graph_service import GraphService
 
 router = APIRouter()
 graph_service = GraphService()

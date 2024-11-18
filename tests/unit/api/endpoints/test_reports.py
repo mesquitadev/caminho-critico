@@ -1,7 +1,7 @@
 import pytest
 from fastapi import HTTPException
 
-from sgs_caminho_critico.service.ReportService import ReportService
+from sgs_caminho_critico.service.report_service import ReportService
 
 
 def test_pegar_relatorios_do_inventario_e_salvar_no_csv_success(mocker, mock_repo):

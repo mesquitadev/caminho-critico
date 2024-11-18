@@ -5,7 +5,7 @@ from fastapi import HTTPException
 import json
 import requests
 import logging
-from sgs_caminho_critico.repository.JobsRepository import JobsRepository
+from sgs_caminho_critico.repository.jobs_repository import JobsRepository
 from sgs_caminho_critico.utils import read_csv_file, construir_grafo, encontrar_caminho, remover_repetidos, \
     exibir_edges, get_pcp_token, format_timestamp, \
     get_next_nodes, set_node_status, map_status, concatenar_data_hora, determinar_data

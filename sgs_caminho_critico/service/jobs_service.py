@@ -6,7 +6,7 @@ import requests
 from fastapi import HTTPException
 
 from sgs_caminho_critico.dto.request import JobStatusRequest
-from sgs_caminho_critico.repository.JobsRepository import JobsRepository
+from sgs_caminho_critico.repository.jobs_repository import JobsRepository
 from sgs_caminho_critico.utils import status_mapping, get_pcp_token, format_timestamp
 
 

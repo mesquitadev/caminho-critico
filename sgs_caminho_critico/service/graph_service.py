@@ -5,7 +5,7 @@ import traceback
 import requests
 from fastapi import HTTPException
 
-from sgs_caminho_critico.repository.JobsRepository import JobsRepository
+from sgs_caminho_critico.repository.jobs_repository import JobsRepository
 from sgs_caminho_critico.utils import read_csv_file, construir_grafo, encontrar_caminho, remover_repetidos, \
     exibir_edges, limpa_campos, format_order_date, map_mainstat_to_color_icon, get_pcp_token
 

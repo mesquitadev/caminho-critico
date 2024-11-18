@@ -1,6 +1,6 @@
 import os
 from fastapi import HTTPException
-from sgs_caminho_critico.repository.JobsRepository import JobsRepository
+from sgs_caminho_critico.repository.jobs_repository import JobsRepository
 
 
 class ReportService:

@@ -7,8 +7,8 @@ from sqlalchemy import create_engine, StaticPool
 from sqlalchemy.orm import sessionmaker
 
 from sgs_caminho_critico.config import settings
-from sgs_caminho_critico.service.FluxoService import FluxoService
-from sgs_caminho_critico.repository.JobsRepository import JobsRepository
+from sgs_caminho_critico.service.fluxo_service import FluxoService
+from sgs_caminho_critico.repository.jobs_repository import JobsRepository
 
 
 @pytest.fixture(autouse=True)

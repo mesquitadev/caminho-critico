@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from sgs_caminho_critico import __version__
-from sgs_caminho_critico.controller.FluxoController import fluxo_router
-from sgs_caminho_critico.controller.GraphController import router
-from sgs_caminho_critico.controller.RunController import run_router
-from sgs_caminho_critico.controller.ReportController import report_router
-from sgs_caminho_critico.controller.JobsController import jobs_router
+from sgs_caminho_critico.controller.fluxo_controller import fluxo_router
+from sgs_caminho_critico.controller.graph_controller import router
+from sgs_caminho_critico.controller.run_controller import run_router
+from sgs_caminho_critico.controller.report_controller import report_router
+from sgs_caminho_critico.controller.jobs_controller import jobs_router
+from sgs_caminho_critico.controller.health_check_controller import health_check_router
 
 app = FastAPI(
     title="API do Caminho Crítico",
@@ -22,3 +23,5 @@ app.include_router(report_router, prefix="/api/report", tags=["Report"])
 
 app.include_router(jobs_router, prefix="/api/jobs", tags=["Jobs"])
 app.include_router(fluxo_router, prefix="/api/fluxo", tags=["Fluxo"])
+
+app.include_router(health_check_router, prefix="/", tags=["HealthCheck"])

@@ -1,7 +1,7 @@
 import pytest
 import requests
 from fastapi import HTTPException
-from sgs_caminho_critico.service.GraphService import GraphService, buscar_dados_job_pcp_comandos
+from sgs_caminho_critico.service.graph_service import GraphService, buscar_dados_job_pcp_comandos
 
 
 def test_processar_dados_success(mock_csv_file, mocker):

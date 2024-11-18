@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 from fastapi import HTTPException
 
-from sgs_caminho_critico.service.JobsService import JobsService
+from sgs_caminho_critico.service.jobs_service import JobsService
 from sgs_caminho_critico.utils import status_mapping, format_timestamp
 
 

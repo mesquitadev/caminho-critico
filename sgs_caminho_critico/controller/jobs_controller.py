@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from sgs_caminho_critico.dto.request import JobStatusRequest
-from sgs_caminho_critico.service.JobsService import JobsService
+from sgs_caminho_critico.service.jobs_service import JobsService
 
 jobs_router = APIRouter()
 jobs_service = JobsService()
